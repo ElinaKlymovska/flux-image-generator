@@ -8,12 +8,14 @@ A Python package for generating realistic images using BFL.ai FLUX API. This pro
 ## 🌟 Features
 
 - 🎨 Generate realistic portraits using FLUX API
+- 🔄 **Character rotation with 12 different angles**
 - 🔧 Customizable prompts and parameters
 - 📁 Clean and organized project structure
 - 🐍 Modern Python packaging
 - 🔒 Secure API key management
 - 📊 Batch image generation
 - 🧪 Built-in API testing
+- 🎯 360-degree character sequences
 
 ## 📋 Requirements
 
@@ -71,6 +73,21 @@ python bin/prompt_tester_main.py
 python bin/generate_all_variations.py
 ```
 
+**Character Rotation**:
+```bash
+# Basic 4-angle rotation
+python bin/generate_rotation.py --angles front left back right
+
+# 360-degree sequence (8 steps)
+python bin/generate_rotation.py --steps 8 --style cinematic
+
+# Custom prompt with rotation
+python bin/generate_rotation.py --custom-prompt "wearing red dress" --style fashion
+
+# Or use the script:
+./scripts/run_rotation.sh --steps 8 --style ultra_realistic
+```
+
 ## 📁 Project Structure
 
 ```
@@ -87,11 +104,18 @@ SenteticData/
 │   ├── enhanced_main.py         # Enhanced generator
 │   ├── generate_portrait_variations.py
 │   ├── generate_all_variations.py
+│   ├── generate_rotation.py     # Character rotation generator
 │   └── prompt_tester_main.py
 ├── data/
 │   ├── input/                   # Input images
 │   └── output/                  # Generated images
 ├── scripts/                     # Run scripts
+│   ├── run.sh                   # Basic generation
+│   ├── run_enhanced.sh          # Enhanced generation
+│   ├── run_portrait_variations.sh
+│   ├── run_all_variations.sh
+│   ├── run_rotation.sh          # Character rotation
+│   └── run_prompt_tester.sh
 ├── examples/                    # Usage examples
 ├── tests/                       # Test files
 ├── config/                      # Configuration files
@@ -132,6 +156,28 @@ summary = generator.generate_all_variations_summary(
 )
 ```
 
+### Character Rotation Usage
+
+```python
+from src.flux_generator.core.rotation import CharacterRotationGenerator
+
+# Create rotation generator
+generator = CharacterRotationGenerator()
+
+# Generate 360-degree sequence
+results = generator.generate_360_degree_sequence(
+    steps=8,
+    style="cinematic",
+    start_seed=1001
+)
+
+# Generate specific angles
+results = generator.generate_full_rotation(
+    angles=["front", "left", "back", "right"],
+    style="ultra_realistic"
+)
+```
+
 ## 🎨 Available Styles
 
 - **Ultra Realistic** - Фотореалістичний портрет
@@ -146,6 +192,21 @@ summary = generator.generate_all_variations_summary(
 - **Sci-Fi** - Науково-фантастичний
 - **Film Noir** - Фільм-нуар
 - **Impressionist** - Імпресіоністичний
+
+## 🔄 Character Rotation Angles
+
+- **Front** - Прямий фронтальний ракурс
+- **Front-Left** - Легкий поворот вліво
+- **Left** - Поворот на 45° вліво
+- **Back-Left** - Поворот на 90° вліво
+- **Back** - Вид ззаду
+- **Back-Right** - Поворот на 90° вправо
+- **Right** - Поворот на 45° вправо
+- **Front-Right** - Легкий поворот вправо
+- **Three-Quarter Left** - Три чверті вліво
+- **Three-Quarter Right** - Три чверті вправо
+- **Profile Left** - Профіль вліво
+- **Profile Right** - Профіль вправо
 
 ## 📝 License
 
