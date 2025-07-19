@@ -1,0 +1,15 @@
+# FLUX Image Generator Configuration
+
+api:
+  base_url: "https://api.bfl.ai/v1"
+  timeout: 300
+  max_retries: 3
+  retry_delay: 5
+
+generation:
+  default_count: 15
+  default_seed: 1000
+  default_aspect_ratio: "2:3"
+  default_output_format: "jpeg"
+  default_quality: "high"
+  default_style: "realistic" 
