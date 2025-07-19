@@ -65,6 +65,13 @@ python enhanced_main.py
 ./scripts/run_enhanced.sh
 ```
 
+**Prompt Tester** (Automated testing with rotation):
+```bash
+python prompt_tester_main.py
+# or
+./scripts/run_prompt_tester.sh
+```
+
 ## 📁 Project Structure
 
 ```
@@ -84,13 +91,16 @@ flux-image-generator/
 ├── scripts/
 │   ├── run.sh                      # Quick start script
 │   ├── run_manual.sh               # Manual setup script
-│   └── run_enhanced.sh             # Enhanced generator script
+│   ├── run_enhanced.sh             # Enhanced generator script
+│   └── run_prompt_tester.sh        # Prompt tester script
 ├── docs/
 │   ├── README.md                   # Detailed documentation
-│   └── ENHANCED_FEATURES.md        # Enhanced features guide
+│   ├── ENHANCED_FEATURES.md        # Enhanced features guide
+│   └── PROMPT_TESTER.md            # Prompt tester guide
 ├── tests/                          # Test files
 ├── main.py                         # Basic generator entry point
 ├── enhanced_main.py                # Enhanced generator entry point
+├── prompt_tester_main.py           # Prompt tester entry point
 ├── requirements.txt                # Python dependencies
 ├── setup.py                        # Package setup
 ├── pyproject.toml                 # Modern Python packaging
@@ -131,6 +141,22 @@ generator.generate_style_comparison(
     styles=["realistic", "cinematic", "artistic"],
     count_per_style=2
 )
+```
+
+### Prompt Testing
+
+```python
+from flux_generator import PromptTester
+
+# Create prompt tester
+tester = PromptTester()
+
+# Test single prompt with all rotations
+prompt = tester.test_prompts[0]  # ultra_realistic
+tester.test_prompt(prompt)
+
+# Test all prompts (105 images total)
+tester.test_all_prompts()
 ```
 
 ### Command Line
