@@ -18,7 +18,7 @@ setup(
     description="A Python package for generating realistic images using BFL.ai FLUX API",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/flux-image-generator",
+    url="https://github.com/ElinaKlymovska/flux-image-generator",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     classifiers=[

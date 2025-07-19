@@ -28,7 +28,7 @@ A Python package for generating realistic images using BFL.ai FLUX API. This pro
 ### 1. Clone and Setup
 
 ```bash
-git clone https://github.com/yourusername/flux-image-generator.git
+git clone https://github.com/ElinaKlymovska/flux-image-generator.git
 cd flux-image-generator
 ```
 
@@ -224,7 +224,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ```bash
 # Клонування та налаштування
-git clone https://github.com/yourusername/flux-image-generator.git
+git clone https://github.com/ElinaKlymovska/flux-image-generator.git
 cd flux-image-generator
 
 # Встановлення залежностей

@@ -67,18 +67,18 @@ def check_files():
     print("\n📁 Перевірка файлів:")
     
     # Перевірка вхідного зображення
-    if os.path.exists("character.jpg"):
-        size = os.path.getsize("character.jpg") / 1024  # KB
+    if os.path.exists("data/input/character.jpg"):
+        size = os.path.getsize("data/input/character.jpg") / 1024  # KB
         print(f"✅ character.jpg знайдено ({size:.1f} KB)")
     else:
-        print("❌ character.jpg не знайдено")
+        print("❌ data/input/character.jpg не знайдено")
         return False
     
     # Перевірка папки outputs
-    if os.path.exists("outputs"):
-        print("✅ Папка outputs існує")
+    if os.path.exists("data/output"):
+        print("✅ Папка data/output існує")
     else:
-        print("❌ Папка outputs не знайдена")
+        print("❌ Папка data/output не знайдена")
         return False
     
     return True
@@ -104,7 +104,7 @@ def main():
         print("❌ Є проблеми, які потрібно вирішити перед запуском")
         
         if not files_ok:
-            print("   - Перевірте наявність character.jpg")
+            print("   - Перевірте наявність data/input/character.jpg")
         if not api_ok:
             print("   - Перевірте API ключ у файлі .env")
 
