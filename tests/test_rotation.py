@@ -205,15 +205,120 @@ class TestCharacterRotationGenerator:
                 result = generator.generate_single_rotation("front")
                 
                 assert result is None
-
-
-class TestRotationPrompts:
-    """Test rotation prompt configurations."""
     
-    def test_rotation_prompts_structure(self):
-        """Test that rotation prompts have correct structure."""
-        generator = CharacterRotationGenerator()
+    def test_preset_functionality(self, generator):
+        """Test preset-related functionality."""
+        # Test getting available presets
+        presets = generator.get_available_presets()
+        assert isinstance(presets, list)
+        assert len(presets) > 0
         
+        # Check that presets have required structure
+        for preset in presets:
+            assert "key" in preset
+            assert "name" in preset
+            assert isinstance(preset["key"], str)
+            assert isinstance(preset["name"], str)
+        
+        # Test getting preset info
+        preset_info = generator.get_preset_info("rotation_front")
+        assert isinstance(preset_info, dict)
+        assert "prompt" in preset_info
+        assert "preset_name" in preset_info
+        assert "description" in preset_info
+        assert "use_case" in preset_info
+        assert "technical_specs" in preset_info
+    
+    def test_rotation_prompts_with_presets(self, generator):
+        """Test that rotation prompts include preset information."""
+        for angle, prompt_info in generator.rotation_prompts.items():
+            assert "preset" in prompt_info
+            assert isinstance(prompt_info["preset"], str)
+            assert prompt_info["preset"].startswith("rotation_")
+    
+    def test_character_consistent_rotation(self, generator):
+        """Test character-consistent rotation generation."""
+        angles = ["front", "left"]
+        
+        with patch('flux_generator.core.rotation.ImageUtils.save_image_data'):
+            with patch('flux_generator.core.rotation.ImageUtils.generate_filename', return_value="test_image.jpg"):
+                with patch('flux_generator.core.rotation.time.sleep'):  # Mock sleep
+                    results = generator.generate_character_consistent_rotation(
+                        angles=angles,
+                        base_prompt="portrait of a woman with brown hair",
+                        use_presets=True
+                    )
+                    
+                    assert isinstance(results, dict)
+                    assert len(results) == len(angles)
+                    assert all(angle in results for angle in angles)
+    
+    def test_generate_rotation_with_preset(self, generator):
+        """Test rotation generation with specific preset."""
+        with patch('flux_generator.core.rotation.ImageUtils.save_image_data'):
+            with patch('flux_generator.core.rotation.ImageUtils.generate_filename', return_value="test_image.jpg"):
+                result = generator.generate_rotation_with_preset(
+                    angle="front",
+                    preset="rotation_front",
+                    custom_prompt="portrait of a woman",
+                    seed=1001
+                )
+                
+                assert result is not None
+                assert isinstance(result, Path)
+                generator.api_client.generate_image.assert_called_once()
+    
+    def test_generate_rotation_with_custom_preset(self, generator):
+        """Test rotation generation with custom preset."""
+        with patch('flux_generator.core.rotation.ImageUtils.save_image_data'):
+            with patch('flux_generator.core.rotation.ImageUtils.generate_filename', return_value="test_image.jpg"):
+                result = generator.generate_rotation_with_custom_preset(
+                    angle="front",
+                    preset="rotation_front",
+                    custom_prompt="portrait of a woman in red dress",
+                    seed=1001
+                )
+                
+                assert result is not None
+                assert isinstance(result, Path)
+    
+    def test_full_rotation_with_presets(self, generator):
+        """Test full rotation generation with presets enabled."""
+        angles = ["front", "left", "right"]
+        
+        with patch('flux_generator.core.rotation.ImageUtils.save_image_data'):
+            with patch('flux_generator.core.rotation.ImageUtils.generate_filename', return_value="test_image.jpg"):
+                with patch('flux_generator.core.rotation.time.sleep'):  # Mock sleep
+                    results = generator.generate_full_rotation(
+                        angles=angles,
+                        custom_prompt="portrait of a woman",
+                        use_presets=True
+                    )
+                    
+                    assert isinstance(results, dict)
+                    assert len(results) == len(angles)
+                    assert all(angle in results for angle in angles)
+    
+    def test_full_rotation_without_presets(self, generator):
+        """Test full rotation generation with presets disabled."""
+        angles = ["front", "left", "right"]
+        
+        with patch('flux_generator.core.rotation.ImageUtils.save_image_data'):
+            with patch('flux_generator.core.rotation.ImageUtils.generate_filename', return_value="test_image.jpg"):
+                with patch('flux_generator.core.rotation.time.sleep'):  # Mock sleep
+                    results = generator.generate_full_rotation(
+                        angles=angles,
+                        style="ultra_realistic",
+                        custom_prompt="portrait of a woman",
+                        use_presets=False
+                    )
+                    
+                    assert isinstance(results, dict)
+                    assert len(results) == len(angles)
+                    assert all(angle in results for angle in angles) 
+    
+    def test_rotation_prompts_structure(self, generator):
+        """Test that rotation prompts have correct structure."""
         for angle, prompt_info in generator.rotation_prompts.items():
             assert isinstance(angle, str)
             assert isinstance(prompt_info, dict)
@@ -224,10 +329,8 @@ class TestRotationPrompts:
             assert isinstance(prompt_info["prompt"], str)
             assert isinstance(prompt_info["description"], str)
     
-    def test_rotation_prompts_content(self):
+    def test_rotation_prompts_content(self, generator):
         """Test that rotation prompts contain expected content."""
-        generator = CharacterRotationGenerator()
-        
         # Check specific angles
         front_info = generator.rotation_prompts["front"]
         assert "Front" in front_info["name"]

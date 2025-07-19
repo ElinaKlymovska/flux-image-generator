@@ -84,6 +84,18 @@ python bin/generate_rotation.py --steps 8 --style cinematic
 # Custom prompt with rotation
 python bin/generate_rotation.py --custom-prompt "wearing red dress" --style fashion
 
+# Enhanced rotation with Black Forest Labs presets (recommended)
+python bin/generate_rotation.py --angles front left back right --use-presets
+
+# Character-consistent rotation with custom base prompt
+python bin/generate_rotation.py --angles front left back right --custom-prompt "portrait of a woman with long brown hair"
+
+# List available rotation presets
+python bin/generate_rotation.py --list-presets
+
+# Show preset details
+python bin/generate_rotation.py --preset-info rotation_front
+
 # Or use the script:
 ./scripts/run_rotation.sh --steps 8 --style ultra_realistic
 ```
@@ -207,6 +219,42 @@ results = generator.generate_full_rotation(
 - **Three-Quarter Right** - Три чверті вправо
 - **Profile Left** - Профіль вліво
 - **Profile Right** - Профіль вправо
+
+### 🎯 Enhanced Rotation Features
+
+**Black Forest Labs Best Practices Integration:**
+- **Character Consistency**: Maintains facial features, hairstyle, and distinctive characteristics across all rotation angles
+- **Preset System**: Specialized rotation presets optimized for FLUX.1 Kontext [pro] model
+- **Identity Preservation**: Advanced prompts that preserve character identity during rotation
+- **Professional Quality**: 8K resolution with optimized lighting and composition for each angle
+
+**Available Rotation Presets:**
+- `rotation_front` - Front view with identity preservation
+- `rotation_left` - Left view with character consistency
+- `rotation_right` - Right view with character consistency
+- `rotation_back` - Back view with distinctive features preservation
+- `rotation_profile_left` - Left profile with facial profile preservation
+- `rotation_profile_right` - Right profile with facial profile preservation
+- `rotation_three_quarter_left` - Three-quarter left with identity preservation
+- `rotation_three_quarter_right` - Three-quarter right with identity preservation
+
+**Usage Examples:**
+```python
+# Character-consistent rotation with presets
+generator = CharacterRotationGenerator()
+results = generator.generate_character_consistent_rotation(
+    angles=["front", "left", "back", "right"],
+    base_prompt="portrait of a woman with long brown hair and green eyes",
+    use_presets=True
+)
+
+# Generate with specific preset
+result = generator.generate_rotation_with_preset(
+    angle="front",
+    preset="rotation_front",
+    custom_prompt="portrait of a woman wearing a red dress"
+)
+```
 
 ## 📝 License
 

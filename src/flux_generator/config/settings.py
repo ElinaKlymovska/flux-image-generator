@@ -17,9 +17,9 @@ load_dotenv()
 class APISettings:
     """API configuration settings."""
     base_url: str = "https://api.bfl.ai/v1"
-    timeout: int = 300
-    max_retries: int = 3
-    retry_delay: int = 5
+    timeout: int = 600  # Increased timeout to 10 minutes
+    max_retries: int = 5  # Increased retries
+    retry_delay: int = 10  # Increased delay between retries
 
 
 @dataclass

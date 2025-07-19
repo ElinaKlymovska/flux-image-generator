@@ -291,4 +291,158 @@ class PromptConfig:
         if style not in cls.PROMPTS:
             raise ValueError(f"Невідомий стиль: {style}")
         
-        return cls.PROMPTS[style].copy() 
+        return cls.PROMPTS[style].copy()
+    
+    @classmethod
+    def get_preset_config(cls, preset: str, aspect_ratio: str = "portrait", quality: str = "high") -> Dict[str, Any]:
+        """Отримання конфігурації пресету для генерації"""
+        # Пресети для різних типів генерації
+        PRESETS = {
+            "rotation_front": {
+                "name": "Rotation - Front View",
+                "prompt": "Front-facing portrait of a woman, direct eye contact, symmetrical composition, professional headshot angle, neutral expression, 8K resolution, perfect lighting from front, maintain exact facial features and identity",
+                "description": "Прямий фронтальний ракурс з збереженням ідентичності",
+                "use_case": "Character rotation sequences, professional headshots, identity preservation",
+                "technical_specs": {
+                    "resolution": "8K",
+                    "lighting": "front lighting",
+                    "background": "neutral",
+                    "focus": "facial features preservation",
+                    "quality": "identity consistency"
+                }
+            },
+            "rotation_left": {
+                "name": "Rotation - Left View",
+                "prompt": "Left-facing portrait of a woman, head turned 45 degrees left, elegant pose, side lighting, 8K resolution, dynamic composition, maintain exact facial features, hairstyle, and distinctive characteristics",
+                "description": "Поворот на 45° вліво з збереженням ідентичності",
+                "use_case": "Character rotation sequences, dynamic portraits",
+                "technical_specs": {
+                    "resolution": "8K",
+                    "lighting": "side lighting",
+                    "background": "dynamic",
+                    "focus": "identity preservation",
+                    "quality": "character consistency"
+                }
+            },
+            "rotation_right": {
+                "name": "Rotation - Right View",
+                "prompt": "Right-facing portrait of a woman, head turned 45 degrees right, elegant pose, side lighting, 8K resolution, dynamic composition, maintain exact facial features, hairstyle, and distinctive characteristics",
+                "description": "Поворот на 45° вправо з збереженням ідентичності",
+                "use_case": "Character rotation sequences, dynamic portraits",
+                "technical_specs": {
+                    "resolution": "8K",
+                    "lighting": "side lighting",
+                    "background": "dynamic",
+                    "focus": "identity preservation",
+                    "quality": "character consistency"
+                }
+            },
+            "rotation_back": {
+                "name": "Rotation - Back View",
+                "prompt": "Back view of a woman, elegant neck and shoulder line, sophisticated back lighting, 8K resolution, artistic rear composition, maintain exact hairstyle and distinctive features from behind",
+                "description": "Вид ззаду з збереженням характерних рис",
+                "use_case": "Character rotation sequences, artistic portraits",
+                "technical_specs": {
+                    "resolution": "8K",
+                    "lighting": "back lighting",
+                    "background": "artistic",
+                    "focus": "hairstyle preservation",
+                    "quality": "character consistency"
+                }
+            },
+            "rotation_profile_left": {
+                "name": "Rotation - Left Profile",
+                "prompt": "Left profile portrait of a woman, pure side view, elegant profile line, dramatic side lighting, 8K resolution, classic profile composition, maintain exact facial profile and distinctive features",
+                "description": "Профіль вліво з збереженням профілю обличчя",
+                "use_case": "Character rotation sequences, profile portraits",
+                "technical_specs": {
+                    "resolution": "8K",
+                    "lighting": "dramatic side",
+                    "background": "classic",
+                    "focus": "profile preservation",
+                    "quality": "character consistency"
+                }
+            },
+            "rotation_profile_right": {
+                "name": "Rotation - Right Profile",
+                "prompt": "Right profile portrait of a woman, pure side view, elegant profile line, dramatic side lighting, 8K resolution, classic profile composition, maintain exact facial profile and distinctive features",
+                "description": "Профіль вправо з збереженням профілю обличчя",
+                "use_case": "Character rotation sequences, profile portraits",
+                "technical_specs": {
+                    "resolution": "8K",
+                    "lighting": "dramatic side",
+                    "background": "classic",
+                    "focus": "profile preservation",
+                    "quality": "character consistency"
+                }
+            },
+            "rotation_three_quarter_left": {
+                "name": "Rotation - Three Quarter Left",
+                "prompt": "Three-quarter left view of a woman, head turned 30 degrees left, classic portrait angle, professional lighting, 8K resolution, timeless composition, maintain exact facial features, eye color, and distinctive characteristics",
+                "description": "Три чверті вліво з збереженням ідентичності",
+                "use_case": "Character rotation sequences, classic portraits",
+                "technical_specs": {
+                    "resolution": "8K",
+                    "lighting": "professional",
+                    "background": "timeless",
+                    "focus": "identity preservation",
+                    "quality": "character consistency"
+                }
+            },
+            "rotation_three_quarter_right": {
+                "name": "Rotation - Three Quarter Right",
+                "prompt": "Three-quarter right view of a woman, head turned 30 degrees right, classic portrait angle, professional lighting, 8K resolution, timeless composition, maintain exact facial features, eye color, and distinctive characteristics",
+                "description": "Три чверті вправо з збереженням ідентичності",
+                "use_case": "Character rotation sequences, classic portraits",
+                "technical_specs": {
+                    "resolution": "8K",
+                    "lighting": "professional",
+                    "background": "timeless",
+                    "focus": "identity preservation",
+                    "quality": "character consistency"
+                }
+            }
+        }
+        
+        if preset not in PRESETS:
+            raise ValueError(f"Невідомий пресет: {preset}. Доступні пресети: {list(PRESETS.keys())}")
+        
+        if aspect_ratio not in cls.ASPECT_RATIOS:
+            raise ValueError(f"Невідомий аспект: {aspect_ratio}. Доступні аспекти: {list(cls.ASPECT_RATIOS.keys())}")
+        
+        if quality not in cls.QUALITY_SETTINGS:
+            raise ValueError(f"Невідома якість: {quality}. Доступні якості: {list(cls.QUALITY_SETTINGS.keys())}")
+        
+        preset_data = PRESETS[preset]
+        
+        return {
+            "prompt": preset_data["prompt"],
+            "aspect_ratio": cls.ASPECT_RATIOS[aspect_ratio],
+            "quality_settings": cls.QUALITY_SETTINGS[quality],
+            "preset_name": preset_data["name"],
+            "description": preset_data["description"],
+            "use_case": preset_data["use_case"],
+            "technical_specs": preset_data["technical_specs"]
+        }
+    
+    @classmethod
+    def list_available_presets(cls) -> List[Dict[str, str]]:
+        """Список доступних пресетів"""
+        PRESETS = {
+            "rotation_front": "Rotation - Front View",
+            "rotation_left": "Rotation - Left View", 
+            "rotation_right": "Rotation - Right View",
+            "rotation_back": "Rotation - Back View",
+            "rotation_profile_left": "Rotation - Left Profile",
+            "rotation_profile_right": "Rotation - Right Profile",
+            "rotation_three_quarter_left": "Rotation - Three Quarter Left",
+            "rotation_three_quarter_right": "Rotation - Three Quarter Right"
+        }
+        
+        return [
+            {
+                "key": key,
+                "name": value
+            }
+            for key, value in PRESETS.items()
+        ] 
