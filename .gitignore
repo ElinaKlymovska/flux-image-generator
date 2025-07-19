@@ -48,4 +48,9 @@ ehthumbs.db
 Thumbs.db
 
 # Output directory (optional - remove if you want to track generated images)
-data/output/ 
+data/output/
+
+# Python package build artifacts
+*.egg-info/
+build/
+dist/ 
