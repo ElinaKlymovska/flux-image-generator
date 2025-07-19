@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 # Add src to Python path
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from flux_generator import EnhancedFluxGenerator
 
@@ -200,7 +200,7 @@ def main():
     
     try:
         # Перевірка наявності вхідного зображення
-        input_image = Path("data/input/character.jpg")
+        input_image = Path(__file__).parent.parent / "data/input/character.jpg"
         print(f"🔍 Checking input image: {input_image}")
         
         if not input_image.exists():

@@ -37,7 +37,8 @@ class FluxAPIClient:
     def test_connection(self) -> bool:
         """Test API connection."""
         try:
-            # Simple test request
+            # Simple test request - just check if we can reach the API
+            # We'll use a minimal test that should work
             test_data = {
                 "prompt": "test",
                 "input_image": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
@@ -52,16 +53,21 @@ class FluxAPIClient:
                 timeout=10
             )
             
-            if response.status_code == 200:
+            # If we get any response (even error), the API key is working
+            if response.status_code in [200, 400, 422]:  # Success or validation errors
                 return True
             elif response.status_code == 403:
                 raise APIError(403, "Access denied. Check API key.")
             else:
-                # API might not have this endpoint, but key is valid
+                # Any other response means the API is reachable
                 return True
                 
         except requests.exceptions.RequestException as e:
-            raise APIError(0, f"Connection error: {e}")
+            # Network error - API might be down
+            return False
+        except Exception as e:
+            # Any other exception - assume connection failed
+            return False
     
     def poll_generation_status(self, polling_url: str) -> Optional[dict]:
         """Poll generation status until completion."""

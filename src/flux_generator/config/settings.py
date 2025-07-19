@@ -58,7 +58,7 @@ class Settings:
     def __post_init__(self):
         # Load API key from environment
         if not self.api_key:
-            self.api_key = os.getenv("BFL_API_KEY")
+            self.api_key = os.getenv("FLUX_API_KEY") or os.getenv("BFL_API_KEY")
         
         # Create directories if they don't exist
         self.paths.input_dir.mkdir(parents=True, exist_ok=True)
@@ -126,7 +126,7 @@ class Settings:
     def validate(self) -> bool:
         """Validate settings."""
         if not self.api_key:
-            raise ValueError("API key is required. Set BFL_API_KEY environment variable or configure it.")
+            raise ValueError("API key is required. Set FLUX_API_KEY or BFL_API_KEY environment variable or configure it.")
         
         if not self.paths.input_dir.exists():
             raise ValueError(f"Input directory does not exist: {self.paths.input_dir}")

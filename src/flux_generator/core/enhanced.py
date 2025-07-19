@@ -11,7 +11,7 @@ from typing import Optional, List, Dict, Any
 from ..config.settings import settings
 from ..config.prompts import PromptConfig
 from ..api.client import FluxAPIClient
-from ..api.models import GenerationRequest, GenerationResponse
+from ..api.models import GenerationRequest, GenerationResponse, APIError
 from ..utils.logger import get_logger
 from ..utils.image import ImageUtils
 
@@ -291,10 +291,188 @@ class EnhancedFluxGenerator:
         """List available quality settings."""
         return self.prompt_config.list_available_qualities()
     
+    def generate_all_variations(
+        self,
+        count_per_variation: int = 1,
+        start_seed: Optional[int] = None,
+        include_styles: Optional[List[str]] = None,
+        include_aspects: Optional[List[str]] = None,
+        include_qualities: Optional[List[str]] = None,
+        custom_prompt: Optional[str] = None
+    ) -> Dict[str, Dict[str, Dict[str, List[Path]]]]:
+        """
+        Generate all possible variations of images.
+        
+        Args:
+            count_per_variation: Number of images per variation
+            start_seed: Starting seed for generation
+            include_styles: List of styles to include (None = all)
+            include_aspects: List of aspects to include (None = all)
+            include_qualities: List of qualities to include (None = all)
+            custom_prompt: Custom prompt to use instead of style defaults
+            
+        Returns:
+            Nested dictionary: {style: {aspect: {quality: [image_paths]}}}
+        """
+        start_seed = start_seed or self.settings.generation.default_seed
+        
+        # Get all available options
+        all_styles = list(self.prompt_config.PROMPTS.keys())
+        all_aspects = list(self.prompt_config.ASPECT_RATIOS.keys())
+        all_qualities = list(self.prompt_config.QUALITY_SETTINGS.keys())
+        
+        # Filter options if specified
+        styles_to_generate = include_styles or all_styles
+        aspects_to_generate = include_aspects or all_aspects
+        qualities_to_generate = include_qualities or all_qualities
+        
+        # Validate inputs
+        for style in styles_to_generate:
+            if style not in all_styles:
+                raise ValueError(f"Unknown style: {style}")
+        
+        for aspect in aspects_to_generate:
+            if aspect not in all_aspects:
+                raise ValueError(f"Unknown aspect: {aspect}")
+        
+        for quality in qualities_to_generate:
+            if quality not in all_qualities:
+                raise ValueError(f"Unknown quality: {quality}")
+        
+        total_variations = len(styles_to_generate) * len(aspects_to_generate) * len(qualities_to_generate)
+        total_images = total_variations * count_per_variation
+        
+        logger.info(f"Starting generation of ALL variations:")
+        logger.info(f"Styles: {styles_to_generate}")
+        logger.info(f"Aspects: {aspects_to_generate}")
+        logger.info(f"Qualities: {qualities_to_generate}")
+        logger.info(f"Total variations: {total_variations}")
+        logger.info(f"Total images: {total_images}")
+        
+        results = {}
+        current_seed = start_seed
+        successful_total = 0
+        
+        for style_idx, style in enumerate(styles_to_generate):
+            logger.info(f"Processing style {style_idx + 1}/{len(styles_to_generate)}: {style}")
+            results[style] = {}
+            
+            for aspect_idx, aspect in enumerate(aspects_to_generate):
+                logger.info(f"  Processing aspect {aspect_idx + 1}/{len(aspects_to_generate)}: {aspect}")
+                results[style][aspect] = {}
+                
+                for quality_idx, quality in enumerate(qualities_to_generate):
+                    logger.info(f"    Processing quality {quality_idx + 1}/{len(qualities_to_generate)}: {quality}")
+                    
+                    # Set current configuration
+                    self.current_style = style
+                    self.current_aspect = aspect
+                    self.current_quality = quality
+                    
+                    # Generate images for this variation
+                    variation_images = []
+                    for i in range(count_per_variation):
+                        seed = current_seed + i
+                        logger.info(f"      Generating image {i + 1}/{count_per_variation} with seed {seed}")
+                        
+                        try:
+                            output_path = self.generate_single_image(seed, custom_prompt)
+                            
+                            if output_path:
+                                variation_images.append(output_path)
+                                successful_total += 1
+                                logger.info(f"      Successfully generated image {i + 1}/{count_per_variation}")
+                            else:
+                                logger.warning(f"      Failed to generate image {i + 1}/{count_per_variation}")
+                            
+                            # Small delay between requests
+                            if i < count_per_variation - 1:
+                                time.sleep(2)
+                                
+                        except Exception as e:
+                            logger.error(f"      Error in generation {i + 1}/{count_per_variation}: {e}")
+                    
+                    results[style][aspect][quality] = variation_images
+                    current_seed += count_per_variation
+                    
+                    # Delay between variations
+                    if quality_idx < len(qualities_to_generate) - 1:
+                        time.sleep(1)
+                
+                # Delay between aspects
+                if aspect_idx < len(aspects_to_generate) - 1:
+                    time.sleep(1)
+            
+            # Delay between styles
+            if style_idx < len(styles_to_generate) - 1:
+                time.sleep(2)
+        
+        logger.info(f"ALL variations generation completed!")
+        logger.info(f"Successfully generated: {successful_total}/{total_images} images")
+        
+        return results
+    
+    def generate_all_variations_summary(
+        self,
+        count_per_variation: int = 1,
+        start_seed: Optional[int] = None,
+        include_styles: Optional[List[str]] = None,
+        include_aspects: Optional[List[str]] = None,
+        include_qualities: Optional[List[str]] = None,
+        custom_prompt: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Generate all variations and return a summary with statistics.
+        
+        Returns:
+            Dictionary with results and statistics
+        """
+        results = self.generate_all_variations(
+            count_per_variation=count_per_variation,
+            start_seed=start_seed,
+            include_styles=include_styles,
+            include_aspects=include_aspects,
+            include_qualities=include_qualities,
+            custom_prompt=custom_prompt
+        )
+        
+        # Calculate statistics
+        total_variations = 0
+        total_images = 0
+        successful_variations = 0
+        successful_images = 0
+        
+        for style in results:
+            for aspect in results[style]:
+                for quality in results[style][aspect]:
+                    total_variations += 1
+                    images = results[style][aspect][quality]
+                    total_images += len(images)
+                    if images:
+                        successful_variations += 1
+                        successful_images += len(images)
+        
+        summary = {
+            "results": results,
+            "statistics": {
+                "total_variations": total_variations,
+                "successful_variations": successful_variations,
+                "total_images": total_images,
+                "successful_images": successful_images,
+                "success_rate_variations": f"{(successful_variations / total_variations * 100):.1f}%" if total_variations > 0 else "0%",
+                "success_rate_images": f"{(successful_images / total_images * 100):.1f}%" if total_images > 0 else "0%"
+            }
+        }
+        
+        return summary
+    
     def test_connection(self) -> bool:
         """Test API connection."""
         try:
             return self.api_client.test_connection()
+        except APIError as e:
+            logger.error(f"API connection test failed: {e}")
+            return False
         except Exception as e:
             logger.error(f"Connection test failed: {e}")
             return False 

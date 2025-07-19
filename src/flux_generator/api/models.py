@@ -74,12 +74,14 @@ class GenerationResponse:
         return cls(success=False, error_message=error_message, **kwargs)
 
 
-@dataclass
-class APIError:
-    """API error model."""
-    status_code: int
-    message: str
-    details: Optional[Dict[str, Any]] = None
+class APIError(Exception):
+    """API error exception."""
+    
+    def __init__(self, status_code: int, message: str, details: Optional[Dict[str, Any]] = None):
+        self.status_code = status_code
+        self.message = message
+        self.details = details
+        super().__init__(self.message)
     
     def __str__(self) -> str:
         return f"API Error {self.status_code}: {self.message}" 

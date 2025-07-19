@@ -49,7 +49,7 @@ class FluxImageGenerator:
     ) -> Optional[Path]:
         """Generate a single image."""
         # Use defaults if not provided
-        prompt = prompt or self.prompt_config.PROMPTS["realistic"]["prompt"]
+        prompt = prompt or self.prompt_config.PROMPTS["ultra_realistic"]["prompt"]
         seed = seed or self.settings.generation.default_seed
         aspect_ratio = aspect_ratio or self.settings.generation.default_aspect_ratio
         output_format = output_format or self.settings.generation.default_output_format

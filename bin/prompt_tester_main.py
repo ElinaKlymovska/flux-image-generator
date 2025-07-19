@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 # Add src to Python path
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from flux_generator import PromptTester
 
@@ -148,7 +148,7 @@ def show_statistics(tester):
     print(f"📊 Всього зображень: {len(tester.test_prompts) * len(tester.rotation_angles)}")
     
     # Інформація про папки датасетів
-    datasets_dir = Path("data/output/datasets")
+    datasets_dir = Path(__file__).parent.parent / "data/output/datasets"
     if datasets_dir.exists():
         datasets = list(datasets_dir.glob("*"))
         print(f"📁 Існуючих датасетів: {len(datasets)}")
@@ -166,7 +166,7 @@ def main():
     
     try:
         # Перевірка наявності вхідного зображення
-        input_image = Path("data/input/character.jpg")
+        input_image = Path(__file__).parent.parent / "data/input/character.jpg"
         print(f"🔍 Checking input image: {input_image}")
         
         if not input_image.exists():

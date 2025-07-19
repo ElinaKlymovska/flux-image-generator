@@ -19,7 +19,7 @@ fi
 if [ ! -f ".env" ]; then
     echo "⚠️  Файл .env не знайдено"
     echo "📝 Створюю .env з прикладу..."
-    cp env.example .env
+    cp config/project/env.example .env
     echo "✅ Файл .env створено. Будь ласка, додайте ваш API ключ:"
     echo "   nano .env"
     exit 1
@@ -44,12 +44,12 @@ pip install -r requirements.txt
 
 # Тестування API
 echo "🧪 Тестування підключення до API..."
-python test_api.py
+python bin/prompt_tester_main.py
 
 echo ""
 echo "🎯 Запуск генерації..."
 cd "$(dirname "$0")/.."
-python main.py
+python bin/main.py
 
 # Деактивація віртуального середовища
 deactivate 

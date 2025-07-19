@@ -39,4 +39,4 @@ echo "🚀 Запуск Prompt Tester..."
 echo ""
 
 # Запуск тестування промптів
-python prompt_tester_main.py 
+python bin/prompt_tester_main.py 
