@@ -53,8 +53,16 @@ cp env.example .env
 
 ### 4. Run Generation
 
+**Basic Generator** (Simple, single style):
 ```bash
 python main.py
+```
+
+**Enhanced Generator** (Multiple styles, interactive):
+```bash
+python enhanced_main.py
+# or
+./scripts/run_enhanced.sh
 ```
 
 ## 📁 Project Structure
@@ -63,25 +71,31 @@ python main.py
 flux-image-generator/
 ├── src/
 │   └── flux_generator/
-│       ├── __init__.py          # Package initialization
-│       ├── generator.py         # Main generator class
-│       └── test_api.py          # API testing utilities
+│       ├── __init__.py              # Package initialization
+│       ├── generator.py             # Basic generator class
+│       ├── enhanced_generator.py    # Enhanced generator with multiple styles
+│       ├── prompts.py              # Prompt configurations
+│       └── test_api.py             # API testing utilities
 ├── data/
 │   ├── input/
-│   │   └── character.jpg        # Input image
-│   └── output/                  # Generated images
+│   │   └── character.jpg           # Input image
+│   └── output/                     # Generated images
+│       └── enhanced/               # Enhanced generator outputs
 ├── scripts/
-│   ├── run.sh                   # Quick start script
-│   └── run_manual.sh            # Manual setup script
+│   ├── run.sh                      # Quick start script
+│   ├── run_manual.sh               # Manual setup script
+│   └── run_enhanced.sh             # Enhanced generator script
 ├── docs/
-│   └── README.md                # Detailed documentation
-├── tests/                       # Test files
-├── main.py                      # Entry point
-├── requirements.txt             # Python dependencies
-├── setup.py                     # Package setup
-├── pyproject.toml              # Modern Python packaging
-├── env.example                 # Environment template
-└── README.md                   # This file
+│   ├── README.md                   # Detailed documentation
+│   └── ENHANCED_FEATURES.md        # Enhanced features guide
+├── tests/                          # Test files
+├── main.py                         # Basic generator entry point
+├── enhanced_main.py                # Enhanced generator entry point
+├── requirements.txt                # Python dependencies
+├── setup.py                        # Package setup
+├── pyproject.toml                 # Modern Python packaging
+├── env.example                    # Environment template
+└── README.md                      # This file
 ```
 
 ## 🎯 Usage
@@ -96,6 +110,27 @@ generator = FluxImageGenerator()
 
 # Generate 15 images
 generator.generate_images(15)
+```
+
+### Enhanced Usage
+
+```python
+from flux_generator import EnhancedFluxGenerator
+
+# Create enhanced generator
+generator = EnhancedFluxGenerator()
+
+# Set style and generate
+generator.set_style("cinematic")
+generator.set_aspect_ratio("portrait")
+generator.set_quality("high")
+generator.generate_images(5)
+
+# Compare different styles
+generator.generate_style_comparison(
+    styles=["realistic", "cinematic", "artistic"],
+    count_per_style=2
+)
 ```
 
 ### Command Line
