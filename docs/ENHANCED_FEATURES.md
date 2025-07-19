@@ -1,266 +1,242 @@
-# Enhanced FLUX API Image Generator - Features
+# Enhanced FLUX Image Generator - Precision-Focused Prompts
 
-## 🎨 Overview
+## Огляд
 
-Enhanced FLUX API Image Generator - це покращена версія базового генератора з підтримкою різних стилів, аспектів та якостей генерації. Вона дозволяє створювати більш різноманітні та якісні зображення.
+Вдосконалена система промптів для FLUX Image Generator, що реалізує дві ключові стратегії:
 
-## 🚀 New Features
+1. **Precision-Focused Style Prompts** - уніфіковані технічні параметри для консистентної якості
+2. **Context-Enriched Artistic Style Prompts** - контекстуальні анотації для цілеспрямованої генерації
 
-### 1. Multiple Styles
-Підтримка 8 різних стилів генерації:
+## Ключові Покращення
 
-- **Ultra Realistic** - Фотореалістичний портрет з природним освітленням
-- **Cinematic** - Кінематографічний стиль з драматичним освітленням
-- **Artistic** - Художній стиль з живописними ефектами
-- **Fashion** - Модний портрет в стилі fashion фотографії
-- **Vintage** - Вінтажний стиль з ретро атмосферою
-- **Modern** - Сучасний мінімалістичний стиль
-- **Dramatic** - Драматичний стиль з сильними контрастами
-- **Soft & Dreamy** - М'який мрійливий стиль з ефірною атмосферою
+### 1. Прецизійні Технічні Параметри
 
-### 2. Aspect Ratios
-Підтримка різних співвідношень сторін:
+Кожен стиль тепер включає:
+- **Уніфіковану роздільну здатність**: 8K для всіх стилів
+- **Специфічне освітлення**: точний тип освітлення для кожного стилю
+- **Детальні характеристики фону**: від нейтрального до кінематографічного
+- **Фокус на ключових елементах**: від гіпер-деталізованих облич до емоційного виразу
+- **Якісні стандарти**: від RAW до кінематографічної якості
 
-- **Portrait** (2:3) - Вертикальний формат
-- **Square** (1:1) - Квадратний формат
-- **Landscape** (3:2) - Горизонтальний формат
-- **Wide** (16:9) - Широкий формат
+### 2. Контекстуальні Use Cases
 
-### 3. Quality Settings
-Три рівні якості генерації:
+Кожен стиль має чітко визначені сценарії використання:
 
-- **Standard** - Базова якість
-- **High** - Висока якість з upsampling
-- **Creative** - Творчий режим з більшою свободою
+- **Ultra Realistic**: Professional headshots, corporate profiles, high-end fashion catalogs
+- **Cinematic**: Movie posters, film promotional materials, dramatic storytelling
+- **Artistic**: Art galleries, creative portfolios, luxury brand campaigns
+- **Fashion**: Fashion magazines, luxury brand campaigns, runway presentations
+- **Vintage**: Vintage fashion advertising, themed editorial spreads, heritage campaigns
 
-### 4. Interactive Interface
-Інтерактивне меню з можливістю:
+## Доступні Стилі
 
-- Вибору стилів та налаштувань
-- Порівняння різних стилів
-- Використання кастомних промптів
-- Налаштування параметрів
+### Ultra Realistic
+- **Технічні характеристики**: 8K, soft natural lighting, neutral seamless background
+- **Фокус**: hyper-detailed facial features, RAW image quality
+- **Use Case**: Professional headshots, corporate profiles, medical aesthetics
 
-## 📁 File Structure
+### Cinematic
+- **Технічні характеристики**: 8K, dramatic lighting, cinematic depth
+- **Фокус**: emotional expression, film grain effect
+- **Use Case**: Movie posters, film promotions, entertainment portfolios
 
+### Artistic
+- **Технічні характеристики**: 8K, artistic lighting, creative composition
+- **Фокус**: painterly style, masterpiece quality
+- **Use Case**: Art galleries, creative portfolios, luxury campaigns
+
+### Fashion
+- **Технічні характеристики**: 8K, studio lighting, editorial background
+- **Фокус**: fashion presentation, magazine quality
+- **Use Case**: Fashion magazines, luxury brands, runway presentations
+
+### Vintage
+- **Технічні характеристики**: 8K, retro film lighting, nostalgic background
+- **Фокус**: classic beauty, heritage quality
+- **Use Case**: Vintage advertising, themed editorials, heritage campaigns
+
+### Modern
+- **Технічні характеристики**: 8K, contemporary lighting, minimalist background
+- **Фокус**: clean composition, professional quality
+- **Use Case**: Tech profiles, modern brands, contemporary art
+
+### Dramatic
+- **Технічні характеристики**: 8K, intense lighting, dramatic background
+- **Фокус**: emotional expression, theatrical quality
+- **Use Case**: Theater productions, dramatic advertising, artistic exhibitions
+
+### Soft & Dreamy
+- **Технічні характеристики**: 8K, gentle lighting, ethereal background
+- **Фокус**: delicate beauty, dreamlike quality
+- **Use Case**: Romance novels, wedding photography, beauty campaigns
+
+### Fantasy
+- **Технічні характеристики**: 8K, ethereal lighting, mystical background
+- **Фокус**: otherworldly beauty, enchanted quality
+- **Use Case**: Fantasy books, gaming characters, mystical campaigns
+
+### Sci-Fi
+- **Технічні характеристики**: 8K, futuristic lighting, high tech background
+- **Фокус**: technological beauty, advanced quality
+- **Use Case**: Sci-fi entertainment, tech branding, futuristic products
+
+### Film Noir
+- **Технічні характеристики**: 8K, film noir lighting, mysterious background
+- **Фокус**: monochromatic beauty, classic quality
+- **Use Case**: Classic cinema, mystery marketing, vintage detective stories
+
+### Impressionist
+- **Технічні характеристики**: 8K, natural lighting, outdoor background
+- **Фокус**: painterly beauty, artistic quality
+- **Use Case**: Art exhibitions, cultural campaigns, natural products
+
+## CLI Команди
+
+### Перегляд доступних стилів
+```bash
+python -m flux_generator enhanced --list-styles
 ```
-src/flux_generator/
-├── generator.py              # Базовий генератор
-├── enhanced_generator.py     # Покращений генератор
-├── prompts.py               # Конфігурація промптів
-└── test_api.py              # Тестування API
 
-enhanced_main.py              # Інтерактивний інтерфейс
+### Пошук стилів за use case
+```bash
+python -m flux_generator enhanced --use-case "fashion magazine"
 ```
 
-## 🎯 Usage Examples
+### Пошук стилів за технічними характеристиками
+```bash
+python -m flux_generator enhanced --technical-spec "lighting:dramatic"
+```
 
-### Basic Usage
+### Детальна інформація про стиль
+```bash
+python -m flux_generator enhanced --style-info "cinematic"
+```
 
+### Генерація з конкретним стилем
+```bash
+python -m flux_generator enhanced --style "ultra_realistic" --count 3
+```
+
+### Порівняння стилів
+```bash
+python -m flux_generator enhanced --compare --count 2
+```
+
+## Програмний API
+
+### Отримання конфігурації стилю
 ```python
-from flux_generator import EnhancedFluxGenerator
+from flux_generator.config.prompts import PromptConfig
 
-# Створення генератора
+config = PromptConfig.get_prompt_config(
+    style="cinematic",
+    aspect_ratio="portrait",
+    quality="high"
+)
+
+print(f"Prompt: {config['prompt']}")
+print(f"Use Case: {config['use_case']}")
+print(f"Technical Specs: {config['technical_specs']}")
+```
+
+### Пошук стилів за use case
+```python
+matching_styles = PromptConfig.get_prompt_by_use_case("fashion")
+for style in matching_styles:
+    print(f"{style['name']}: {style['use_case']}")
+```
+
+### Пошук за технічними характеристиками
+```python
+matching_styles = PromptConfig.get_prompt_by_technical_spec("lighting", "dramatic")
+for style in matching_styles:
+    print(f"{style['name']}: {style['technical_specs']}")
+```
+
+## Enhanced Generator
+
+### Робота з enhanced генератором
+```python
+from flux_generator.core.enhanced import EnhancedFluxGenerator
+
 generator = EnhancedFluxGenerator()
 
 # Встановлення стилю
 generator.set_style("cinematic")
-generator.set_aspect_ratio("portrait")
-generator.set_quality("high")
+
+# Отримання інформації про поточний стиль
+style_info = generator.get_style_info()
+print(f"Current style: {style_info['name']}")
+print(f"Use case: {style_info['use_case']}")
+
+# Пошук стилів за use case
+fashion_styles = generator.find_styles_by_use_case("fashion")
+print(f"Found {len(fashion_styles)} fashion styles")
 
 # Генерація зображень
-generator.generate_images(5)
+images = generator.generate_images(count=3)
 ```
 
-### Style Comparison
+## Якісні Налаштування
 
-```python
-# Порівняння різних стилів
-generator.generate_style_comparison(
-    styles=["realistic", "cinematic", "artistic"],
-    count_per_style=2
-)
+### Standard
+- **prompt_upsampling**: False
+- **safety_tolerance**: 2
+- **Призначення**: General use
+
+### High
+- **prompt_upsampling**: True
+- **safety_tolerance**: 1
+- **Призначення**: Professional use
+
+### Creative
+- **prompt_upsampling**: True
+- **safety_tolerance**: 3
+- **Призначення**: Artistic projects
+
+### Ultra
+- **prompt_upsampling**: True
+- **safety_tolerance**: 0
+- **Призначення**: Premium applications
+
+## Аспектні Співвідношення
+
+- **portrait**: 2:3
+- **square**: 1:1
+- **landscape**: 3:2
+- **wide**: 16:9
+- **ultra_wide**: 21:9
+
+## Переваги Нової Системи
+
+1. **Консистентність**: Уніфіковані технічні параметри забезпечують стабільну якість
+2. **Цілеспрямованість**: Use cases допомагають вибрати правильний стиль для проекту
+3. **Гнучкість**: Можливість пошуку за різними критеріями
+4. **Професійність**: Прецизійні параметри для професійних результатів
+5. **Зручність**: CLI команди для швидкого доступу до функціональності
+
+## Приклади Використання
+
+### Для Fashion Magazine
+```bash
+python -m flux_generator enhanced --use-case "fashion magazine"
+# Рекомендує: fashion, ultra_realistic, artistic
 ```
 
-### Custom Prompts
-
-```python
-# Генерація з кастомним промптом
-custom_prompt = "portrait of a woman in a magical forest, fantasy style"
-generator.generate_images(3, custom_prompt)
+### Для Movie Poster
+```bash
+python -m flux_generator enhanced --use-case "movie poster"
+# Рекомендує: cinematic, dramatic, noir
 ```
 
-## 🎨 Style Details
-
-### Ultra Realistic
-```
-ultra-realistic portrait of a woman, soft natural lighting, neutral background, 
-high quality, detailed facial features, professional photography, 8k resolution
-```
-**Призначення**: Фотореалістичні портрети для професійного використання
-
-### Cinematic
-```
-cinematic portrait of a woman, dramatic lighting, shallow depth of field, 
-film grain, professional cinematography, moody atmosphere, high contrast
-```
-**Призначення**: Кінематографічні портрети з драматичним освітленням
-
-### Artistic
-```
-artistic portrait of a woman, painterly style, soft brushstrokes, 
-artistic lighting, creative composition, masterpiece quality, fine art photography
-```
-**Призначення**: Художні портрети з живописними ефектами
-
-### Fashion
-```
-fashion portrait of a woman, studio lighting, professional makeup, 
-elegant pose, high fashion photography, magazine quality, sophisticated style
-```
-**Призначення**: Модні портрети для fashion індустрії
-
-### Vintage
-```
-vintage portrait of a woman, retro style, film photography, 
-warm tones, nostalgic atmosphere, classic beauty, timeless elegance
-```
-**Призначення**: Вінтажні портрети з ретро атмосферою
-
-### Modern
-```
-modern portrait of a woman, contemporary style, clean composition, 
-minimalist background, sharp details, professional headshot quality
-```
-**Призначення**: Сучасні мінімалістичні портрети
-
-### Dramatic
-```
-dramatic portrait of a woman, intense lighting, strong shadows, 
-emotional expression, powerful composition, artistic photography
-```
-**Призначення**: Драматичні портрети з сильними контрастами
-
-### Soft & Dreamy
-```
-soft dreamy portrait of a woman, gentle lighting, soft focus, 
-ethereal atmosphere, romantic mood, delicate beauty, pastel tones
-```
-**Призначення**: М'які мрійливі портрети з ефірною атмосферою
-
-## ⚙️ Configuration
-
-### Quality Settings
-
-| Setting | prompt_upsampling | safety_tolerance | Description |
-|---------|------------------|------------------|-------------|
-| Standard | False | 2 | Базова якість, безпечний режим |
-| High | True | 1 | Висока якість з upsampling |
-| Creative | True | 3 | Творчий режим з більшою свободою |
-
-### Aspect Ratios
-
-| Ratio | Dimensions | Use Case |
-|-------|------------|----------|
-| 2:3 | Portrait | Вертикальні портрети |
-| 1:1 | Square | Квадратні зображення |
-| 3:2 | Landscape | Горизонтальні зображення |
-| 16:9 | Wide | Широкі зображення |
-
-## 🎯 Best Practices
-
-### 1. Style Selection
-- **Realistic**: Для професійних портретів
-- **Cinematic**: Для драматичних ефектів
-- **Artistic**: Для творчих проектів
-- **Fashion**: Для модної фотографії
-- **Vintage**: Для ретро стилю
-- **Modern**: Для сучасних проектів
-- **Dramatic**: Для емоційних портретів
-- **Soft**: Для романтичних зображень
-
-### 2. Quality Settings
-- **Standard**: Для швидкого тестування
-- **High**: Для фінальних результатів
-- **Creative**: Для експериментів
-
-### 3. Aspect Ratios
-- **Portrait**: Найкраще для портретів
-- **Square**: Для соціальних мереж
-- **Landscape**: Для широких зображень
-- **Wide**: Для кінематографічних ефектів
-
-## 🔧 Advanced Usage
-
-### Custom Prompt Creation
-
-```python
-# Створення власного промпту на основі існуючого стилю
-base_config = PromptConfig.get_prompt_config("realistic")
-custom_prompt = base_config["prompt"] + ", wearing a red dress, outdoor setting"
-
-generator.generate_images(2, custom_prompt)
+### Для Tech Company Profile
+```bash
+python -m flux_generator enhanced --use-case "tech company"
+# Рекомендує: modern, ultra_realistic
 ```
 
-### Batch Processing
-
-```python
-# Генерація зображень у різних стилях
-styles = ["realistic", "cinematic", "artistic"]
-for style in styles:
-    generator.set_style(style)
-    generator.generate_images(3)
-```
-
-### Configuration Management
-
-```python
-# Збереження та відновлення конфігурації
-config = generator.get_current_config()
-print(f"Current style: {config['style_name']}")
-print(f"Current aspect: {config['aspect_ratio']}")
-```
-
-## 🚨 Troubleshooting
-
-### Common Issues
-
-1. **Style not found**: Перевірте правильність назви стилю
-2. **Aspect ratio error**: Використовуйте тільки підтримувані аспекти
-3. **Quality setting invalid**: Використовуйте standard, high або creative
-
-### Performance Tips
-
-1. **Use appropriate quality**: Standard для тестування, High для фінальних результатів
-2. **Limit batch size**: Генеруйте не більше 5-10 зображень за раз
-3. **Monitor API limits**: Дотримуйтесь лімітів API
-
-## 📊 Output Organization
-
-Покращений генератор зберігає зображення в окремій папці:
-
-```
-data/output/enhanced/
-├── realistic_2000.jpg
-├── realistic_2001.jpg
-├── cinematic_2002.jpg
-├── artistic_2003.jpg
-└── ...
-```
-
-## 🔄 Migration from Basic Generator
-
-Для переходу з базового генератора:
-
-```python
-# Старий код
-from flux_generator import FluxImageGenerator
-generator = FluxImageGenerator()
-generator.generate_images(15)
-
-# Новий код
-from flux_generator import EnhancedFluxGenerator
-generator = EnhancedFluxGenerator()
-generator.set_style("realistic")  # Еквівалент базовому
-generator.generate_images(15)
+### Для Art Gallery
+```bash
+python -m flux_generator enhanced --use-case "art gallery"
+# Рекомендує: artistic, impressionist, fantasy
 ``` 
