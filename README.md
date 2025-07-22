@@ -9,6 +9,7 @@ A Python package for generating realistic images using BFL.ai FLUX API. This pro
 
 - 🎨 Generate realistic portraits using FLUX API
 - 🔄 **Character rotation with 12 different angles**
+- 🎭 **Adetailer integration for enhanced face details**
 - 🔧 Customizable prompts and parameters
 - 📁 Clean and organized project structure
 - 🐍 Modern Python packaging
@@ -100,6 +101,22 @@ python bin/generate_rotation.py --preset-info rotation_front
 ./scripts/run_rotation.sh --steps 8 --style ultra_realistic
 ```
 
+**Adetailer Face Enhancement**:
+```bash
+# Single image with Adetailer
+python bin/generate_adetailer.py
+
+# Batch generation with Adetailer
+python bin/generate_adetailer_batch.py
+
+# CLI commands for Adetailer
+python -m src.flux_generator.cli.adetailer_commands generate --confidence 0.4 --denoising-strength 0.5
+
+# Or use the scripts:
+./scripts/run_adetailer.sh
+./scripts/run_adetailer_batch.sh
+```
+
 ## 📁 Project Structure
 
 ```
@@ -117,6 +134,8 @@ SenteticData/
 │   ├── generate_portrait_variations.py
 │   ├── generate_all_variations.py
 │   ├── generate_rotation.py     # Character rotation generator
+│   ├── generate_adetailer.py    # Adetailer face enhancement
+│   ├── generate_adetailer_batch.py # Batch Adetailer generation
 │   └── prompt_tester_main.py
 ├── data/
 │   ├── input/                   # Input images
@@ -127,6 +146,8 @@ SenteticData/
 │   ├── run_portrait_variations.sh
 │   ├── run_all_variations.sh
 │   ├── run_rotation.sh          # Character rotation
+│   ├── run_adetailer.sh         # Adetailer generation
+│   ├── run_adetailer_batch.sh   # Batch Adetailer generation
 │   └── run_prompt_tester.sh
 ├── examples/                    # Usage examples
 ├── tests/                       # Test files
@@ -187,6 +208,41 @@ results = generator.generate_360_degree_sequence(
 results = generator.generate_full_rotation(
     angles=["front", "left", "back", "right"],
     style="ultra_realistic"
+)
+```
+
+### Adetailer Face Enhancement Usage
+
+```python
+from src.flux_generator.core.adetailer import AdetailerGenerator
+
+# Create Adetailer generator
+generator = AdetailerGenerator()
+
+# Generate single image with enhanced face details
+output_path = generator.generate_with_adetailer(
+    prompt="A beautiful woman with realistic face details",
+    seed=12345,
+    adetailer_config={
+        'confidence': 0.4,
+        'denoising_strength': 0.5,
+        'steps': 25,
+        'cfg_scale': 8.0
+    }
+)
+
+# Generate multiple images with Adetailer
+output_paths = generator.generate_multiple_with_adetailer(
+    count=5,
+    start_seed=1000
+)
+
+# Update Adetailer settings
+generator.update_adetailer_settings(
+    confidence=0.5,
+    denoising_strength=0.6,
+    steps=30,
+    cfg_scale=9.0
 )
 ```
 
@@ -255,6 +311,48 @@ result = generator.generate_rotation_with_preset(
     custom_prompt="portrait of a woman wearing a red dress"
 )
 ```
+
+## 🎭 Adetailer Face Enhancement
+
+The Adetailer integration provides enhanced face detail generation for more realistic portraits:
+
+### Key Features
+- **Automatic Face Detection**: Uses YOLOv8 model for precise face detection
+- **Enhanced Detail Processing**: Applies specialized prompts for face quality improvement
+- **Configurable Parameters**: Flexible settings for different scenarios
+- **Batch Processing**: Support for multiple image generation
+- **FLUX API Integration**: Full integration with existing system
+
+### Adetailer Parameters
+- **Confidence**: Face detection confidence (0.0-1.0)
+- **Denoising Strength**: Noise reduction strength (0.0-1.0)
+- **Steps**: Number of generation steps
+- **CFG Scale**: CFG scale for detail control
+- **Sampler**: Generation sampler type
+- **Face Enhancement Prompt**: Specialized prompts for face improvement
+
+### Recommended Settings
+```python
+# For portraits
+adetailer_config = {
+    'confidence': 0.4,
+    'denoising_strength': 0.5,
+    'steps': 25,
+    'cfg_scale': 8.0,
+    'prompt': 'beautiful face, detailed eyes, perfect skin, high quality, ultra realistic'
+}
+
+# For group photos
+adetailer_config = {
+    'confidence': 0.3,
+    'denoising_strength': 0.4,
+    'steps': 20,
+    'cfg_scale': 7.0,
+    'prompt': 'detailed faces, natural skin, clear eyes'
+}
+```
+
+For detailed documentation, see [ADETAILER_INTEGRATION.md](docs/ADETAILER_INTEGRATION.md).
 
 ## 📝 License
 
