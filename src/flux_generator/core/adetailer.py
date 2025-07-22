@@ -88,6 +88,9 @@ class AdetailerGenerator:
                 if hasattr(self.adetailer_settings, key):
                     setattr(self.adetailer_settings, key, value)
         
+        # Determine whether to use Adetailer parameters
+        use_adetailer = adetailer_config is not None
+        
         # Find all images in the directory
         image_pattern = str(input_dir / file_pattern)
         image_files = glob.glob(image_pattern)
@@ -97,12 +100,20 @@ class AdetailerGenerator:
         png_files = glob.glob(png_pattern)
         image_files.extend(png_files)
         
+        # If no images found with simple pattern, try recursive search
+        if not image_files:
+            # Search recursively in all subdirectories
+            jpg_files = list(input_dir.rglob("*.jpg"))
+            png_files = list(input_dir.rglob("*.png"))
+            image_files = [str(f) for f in jpg_files + png_files]
+        
         if not image_files:
             logger.warning(f"No images found in {input_dir} with pattern {file_pattern}")
             return []
         
         logger.info(f"Found {len(image_files)} images to process with Adetailer")
         logger.info(f"Output directory: {output_dir}")
+        logger.info(f"Using Adetailer parameters: {use_adetailer}")
         
         processed_images = []
         successful_count = 0
@@ -116,7 +127,8 @@ class AdetailerGenerator:
                 enhanced_path = self._process_single_existing_image(
                     image_path, 
                     output_dir,
-                    output_suffix
+                    output_suffix,
+                    use_adetailer=use_adetailer
                 )
                 
                 if enhanced_path:
@@ -141,17 +153,19 @@ class AdetailerGenerator:
         self, 
         image_path: Path, 
         output_dir: Path,
-        output_suffix: str
+        output_suffix: str,
+        use_adetailer: bool = True
     ) -> Optional[Path]:
         """Process a single existing image with Adetailer enhancement."""
         try:
-            # Create Adetailer request
-            adetailer_request = self._create_adetailer_request_from_file(
-                image_path
-            )
+            # Create request based on whether to use Adetailer or not
+            if use_adetailer:
+                request = self._create_adetailer_request_from_file(image_path)
+            else:
+                request = self._create_standard_request_from_file(image_path)
             
-            # Send to API with Adetailer parameters
-            response = self.api_client.generate_image(adetailer_request)
+            # Send to API
+            response = self.api_client.generate_image(request)
             
             if response.success and response.image_data:
                 # Generate filename for enhanced image
@@ -165,7 +179,7 @@ class AdetailerGenerator:
                 
                 return output_path
             else:
-                logger.error(f"Adetailer enhancement failed for {image_path.name}: {response.error_message}")
+                logger.error(f"Enhancement failed for {image_path.name}: {response.error_message}")
                 return None
                 
         except Exception as e:
@@ -176,19 +190,12 @@ class AdetailerGenerator:
         self, 
         image_path: Path
     ) -> GenerationRequest:
-        """Create generation request with Adetailer parameters from existing file."""
-        # Read image
-        with open(image_path, "rb") as f:
+        """Create Adetailer request from existing image file."""
+        # Read and encode image
+        with open(image_path, 'rb') as f:
             image_data = f.read()
         
-        # Determine MIME type
-        mime_type = "image/jpeg"
-        if image_path.suffix.lower() in [".png"]:
-            mime_type = "image/png"
-        
-        # Encode to base64
-        encoded_image = base64.b64encode(image_data).decode("utf-8")
-        input_image = f"data:{mime_type};base64,{encoded_image}"
+        input_image = base64.b64encode(image_data).decode('utf-8')
         
         # Create enhanced prompt with face details
         enhanced_prompt = f"{self.adetailer_settings.prompt}, ultra realistic face, detailed facial features"
@@ -223,6 +230,31 @@ class AdetailerGenerator:
         
         return request
     
+    def _create_standard_request_from_file(
+        self, 
+        image_path: Path
+    ) -> GenerationRequest:
+        """Create standard request from existing image file (without Adetailer parameters)."""
+        # Read and encode image
+        with open(image_path, 'rb') as f:
+            image_data = f.read()
+        
+        input_image = base64.b64encode(image_data).decode('utf-8')
+        
+        # Create enhanced prompt for face improvement
+        enhanced_prompt = "ultra realistic face, detailed facial features, perfect skin, high quality, beautiful eyes"
+        
+        # Create standard request without Adetailer parameters
+        request = GenerationRequest(
+            prompt=enhanced_prompt,
+            input_image=input_image,
+            seed=1000,  # Default seed for processing
+            aspect_ratio="1:1",  # Square for face processing
+            output_format=image_path.suffix[1:] if image_path.suffix else "jpeg"
+        )
+        
+        return request
+    
     def process_specific_images(
         self, 
         image_paths: List[Path],
@@ -244,8 +276,12 @@ class AdetailerGenerator:
                 if hasattr(self.adetailer_settings, key):
                     setattr(self.adetailer_settings, key, value)
         
+        # Determine whether to use Adetailer parameters
+        use_adetailer = adetailer_config is not None
+        
         logger.info(f"Processing {len(image_paths)} specific images with Adetailer")
         logger.info(f"Output directory: {output_dir}")
+        logger.info(f"Using Adetailer parameters: {use_adetailer}")
         
         processed_images = []
         successful_count = 0
@@ -258,7 +294,8 @@ class AdetailerGenerator:
                 enhanced_path = self._process_single_existing_image(
                     image_path, 
                     output_dir,
-                    output_suffix
+                    output_suffix,
+                    use_adetailer=use_adetailer
                 )
                 
                 if enhanced_path:
