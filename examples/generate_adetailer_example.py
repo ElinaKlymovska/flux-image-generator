@@ -128,9 +128,14 @@ def example_process_existing_images():
             'prompt': 'beautiful face, detailed eyes, perfect skin, high quality, ultra realistic'
         }
         
+        # Define output directory
+        output_dir = Path("data/output/adetailer_processed")
+        print(f"📁 Output directory: {output_dir}")
+        
         # Process existing images
         output_paths = generator.process_existing_images(
             file_pattern="*.jpg",  # Process all JPG files
+            output_dir=output_dir,
             adetailer_config=adetailer_config,
             output_suffix="_adetailer"
         )
@@ -139,6 +144,7 @@ def example_process_existing_images():
             print(f"✅ Processed {len(output_paths)} images:")
             for i, path in enumerate(output_paths, 1):
                 print(f"  {i}. {path}")
+            print(f"📁 All enhanced images saved to: {output_dir}")
         else:
             print("❌ No images were processed")
             
@@ -180,6 +186,10 @@ def example_process_specific_images():
         for img in existing_images:
             print(f"  📸 {img.name}")
         
+        # Define output directory
+        adetailer_output_dir = Path("data/output/adetailer_processed")
+        print(f"📁 Output directory: {adetailer_output_dir}")
+        
         # Custom Adetailer settings
         adetailer_config = {
             'confidence': 0.5,  # High confidence
@@ -192,6 +202,7 @@ def example_process_specific_images():
         # Process specific images
         output_paths = generator.process_specific_images(
             image_paths=existing_images,
+            output_dir=adetailer_output_dir,
             adetailer_config=adetailer_config,
             output_suffix="_enhanced"
         )
@@ -200,6 +211,7 @@ def example_process_specific_images():
             print(f"✅ Processed {len(output_paths)} images:")
             for i, path in enumerate(output_paths, 1):
                 print(f"  {i}. {path}")
+            print(f"📁 All enhanced images saved to: {adetailer_output_dir}")
         else:
             print("❌ No images were processed")
             

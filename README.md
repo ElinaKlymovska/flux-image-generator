@@ -257,6 +257,7 @@ generator.update_adetailer_settings(
 # Process existing images with Adetailer
 output_paths = generator.process_existing_images(
     file_pattern="*.jpg",
+    output_dir=Path("data/output/adetailer_processed"),
     adetailer_config={
         'confidence': 0.4,
         'denoising_strength': 0.5,
@@ -273,6 +274,7 @@ specific_images = [
 ]
 output_paths = generator.process_specific_images(
     image_paths=specific_images,
+    output_dir=Path("data/output/adetailer_processed"),
     adetailer_config={'confidence': 0.5, 'steps': 30},
     output_suffix="_enhanced"
 )

@@ -54,10 +54,15 @@ def main():
             'prompt': 'beautiful face, detailed eyes, perfect skin, high quality, ultra realistic'
         }
         
+        # Define output directory
+        output_dir = Path("data/output/adetailer_processed")
+        print(f"\n📁 Output directory: {output_dir}")
+        
         # Process existing images
         print("\n🚀 Starting Adetailer processing of existing images...")
         output_paths = generator.process_existing_images(
             file_pattern="*.jpg",  # Process all JPG files
+            output_dir=output_dir,
             adetailer_config=adetailer_config,
             output_suffix="_adetailer"
         )
@@ -66,6 +71,7 @@ def main():
             print(f"\n✅ Successfully processed {len(output_paths)} images:")
             for i, path in enumerate(output_paths, 1):
                 print(f"  {i}. {path}")
+            print(f"\n📁 All enhanced images saved to: {output_dir}")
             return 0
         else:
             print("❌ No images were processed")

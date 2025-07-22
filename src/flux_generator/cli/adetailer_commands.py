@@ -148,6 +148,7 @@ def batch(
 @adetailer.command()
 @click.option('--api-key', envvar='FLUX_API_KEY', help='FLUX API key')
 @click.option('--input-dir', type=click.Path(exists=True), help='Input directory with images (default: data/output)')
+@click.option('--output-dir', type=click.Path(), help='Output directory for processed images (default: data/output/adetailer_processed)')
 @click.option('--file-pattern', default='*.jpg', help='File pattern to match (default: *.jpg)')
 @click.option('--output-suffix', default='_adetailer', help='Suffix for enhanced images (default: _adetailer)')
 @click.option('--confidence', type=float, default=0.3, help='Face detection confidence (default: 0.3)')
@@ -157,6 +158,7 @@ def batch(
 def process(
     api_key: Optional[str],
     input_dir: Optional[str],
+    output_dir: Optional[str],
     file_pattern: str,
     output_suffix: str,
     confidence: float,
@@ -186,13 +188,17 @@ def process(
         
         # Process images
         input_path = Path(input_dir) if input_dir else None
+        output_path = Path(output_dir) if output_dir else None
+        
         click.echo(f"🚀 Starting Adetailer processing of existing images...")
         click.echo(f"📁 Input directory: {input_path or 'data/output'}")
+        click.echo(f"📁 Output directory: {output_path or 'data/output/adetailer_processed'}")
         click.echo(f"🔍 File pattern: {file_pattern}")
         click.echo(f"🏷️ Output suffix: {output_suffix}")
         
         output_paths = generator.process_existing_images(
             input_dir=input_path,
+            output_dir=output_path,
             file_pattern=file_pattern,
             adetailer_config=adetailer_config,
             output_suffix=output_suffix
@@ -213,6 +219,7 @@ def process(
 @adetailer.command()
 @click.option('--api-key', envvar='FLUX_API_KEY', help='FLUX API key')
 @click.option('--files', required=True, help='Comma-separated list of image files to process')
+@click.option('--output-dir', type=click.Path(), help='Output directory for processed images (default: data/output/adetailer_processed)')
 @click.option('--output-suffix', default='_adetailer', help='Suffix for enhanced images (default: _adetailer)')
 @click.option('--confidence', type=float, default=0.3, help='Face detection confidence (default: 0.3)')
 @click.option('--denoising-strength', type=float, default=0.4, help='Denoising strength (default: 0.4)')
@@ -221,6 +228,7 @@ def process(
 def process_files(
     api_key: Optional[str],
     files: str,
+    output_dir: Optional[str],
     output_suffix: str,
     confidence: float,
     denoising_strength: float,
@@ -257,14 +265,18 @@ def process_files(
         }
         
         # Process specific files
+        output_path = Path(output_dir) if output_dir else None
+        
         click.echo(f"🚀 Starting Adetailer processing of {len(file_list)} specific files...")
         click.echo(f"📁 Files to process:")
         for file_path in file_list:
             click.echo(f"  📸 {file_path}")
+        click.echo(f"📁 Output directory: {output_path or 'data/output/adetailer_processed'}")
         click.echo(f"🏷️ Output suffix: {output_suffix}")
         
         output_paths = generator.process_specific_images(
             image_paths=file_list,
+            output_dir=output_path,
             adetailer_config=adetailer_config,
             output_suffix=output_suffix
         )

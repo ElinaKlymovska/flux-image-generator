@@ -58,6 +58,7 @@ for path in output_paths:
 # Обробка всіх зображень у папці output
 output_paths = generator.process_existing_images(
     file_pattern="*.jpg",
+    output_dir=Path("data/output/adetailer_processed"),
     adetailer_config={
         'confidence': 0.4,
         'denoising_strength': 0.5,
@@ -74,6 +75,7 @@ specific_images = [
 ]
 output_paths = generator.process_specific_images(
     image_paths=specific_images,
+    output_dir=Path("data/output/adetailer_processed"),
     adetailer_config={'confidence': 0.5, 'steps': 30},
     output_suffix="_enhanced"
 )
@@ -136,6 +138,7 @@ python -m src.flux_generator.cli.adetailer_commands batch \
 # Обробка всіх зображень у папці output
 python -m src.flux_generator.cli.adetailer_commands process \
     --file-pattern "*.jpg" \
+    --output-dir "data/output/adetailer_processed" \
     --confidence 0.4 \
     --denoising-strength 0.5 \
     --steps 25 \
@@ -144,6 +147,7 @@ python -m src.flux_generator.cli.adetailer_commands process \
 # Обробка конкретних файлів
 python -m src.flux_generator.cli.adetailer_commands process-files \
     --files "data/output/woman_1000.jpg,data/output/woman_1001.jpg" \
+    --output-dir "data/output/adetailer_processed" \
     --confidence 0.5 \
     --steps 30 \
     --output-suffix "_enhanced"
@@ -277,6 +281,16 @@ tests/
 └── test_adetailer.py             # Тести
 docs/
 └── ADETAILER_INTEGRATION.md      # Ця документація
+
+data/
+├── input/
+│   └── character.jpg             # Вхідне зображення
+└── output/
+    ├── [згенеровані зображення]  # Оригінальні зображення
+    └── adetailer_processed/      # Зображення оброблені Adetailer
+        ├── image1_adetailer.jpg
+        ├── image2_adetailer.jpg
+        └── ...
 ```
 
 ## Troubleshooting

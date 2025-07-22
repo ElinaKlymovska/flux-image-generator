@@ -65,6 +65,7 @@ class AdetailerGenerator:
     def process_existing_images(
         self, 
         input_dir: Optional[Path] = None,
+        output_dir: Optional[Path] = None,
         file_pattern: str = "*.jpg",
         adetailer_config: Optional[Dict[str, Any]] = None,
         output_suffix: str = "_adetailer"
@@ -73,6 +74,13 @@ class AdetailerGenerator:
         # Use output directory if not specified
         if input_dir is None:
             input_dir = self.settings.paths.output_dir
+        
+        # Create output directory for Adetailer processed images
+        if output_dir is None:
+            output_dir = self.settings.paths.output_dir / "adetailer_processed"
+        
+        # Create output directory if it doesn't exist
+        output_dir.mkdir(parents=True, exist_ok=True)
         
         # Update Adetailer settings if provided
         if adetailer_config:
@@ -94,6 +102,7 @@ class AdetailerGenerator:
             return []
         
         logger.info(f"Found {len(image_files)} images to process with Adetailer")
+        logger.info(f"Output directory: {output_dir}")
         
         processed_images = []
         successful_count = 0
@@ -106,6 +115,7 @@ class AdetailerGenerator:
                 # Process single image with Adetailer
                 enhanced_path = self._process_single_existing_image(
                     image_path, 
+                    output_dir,
                     output_suffix
                 )
                 
@@ -124,11 +134,13 @@ class AdetailerGenerator:
                 logger.error(f"Error processing {image_path.name}: {e}")
         
         logger.info(f"Adetailer processing completed: {successful_count}/{len(image_files)} images processed")
+        logger.info(f"Enhanced images saved to: {output_dir}")
         return processed_images
     
     def _process_single_existing_image(
         self, 
         image_path: Path, 
+        output_dir: Path,
         output_suffix: str
     ) -> Optional[Path]:
         """Process a single existing image with Adetailer enhancement."""
@@ -147,8 +159,8 @@ class AdetailerGenerator:
                 suffix = image_path.suffix
                 enhanced_filename = f"{stem}{output_suffix}{suffix}"
                 
-                # Save enhanced image
-                output_path = self.settings.paths.output_dir / enhanced_filename
+                # Save enhanced image to output directory
+                output_path = output_dir / enhanced_filename
                 ImageUtils.save_image_data(response.image_data, output_path)
                 
                 return output_path
@@ -214,10 +226,18 @@ class AdetailerGenerator:
     def process_specific_images(
         self, 
         image_paths: List[Path],
+        output_dir: Optional[Path] = None,
         adetailer_config: Optional[Dict[str, Any]] = None,
         output_suffix: str = "_adetailer"
     ) -> List[Path]:
         """Process specific images with Adetailer enhancement."""
+        # Create output directory for Adetailer processed images
+        if output_dir is None:
+            output_dir = self.settings.paths.output_dir / "adetailer_processed"
+        
+        # Create output directory if it doesn't exist
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
         # Update Adetailer settings if provided
         if adetailer_config:
             for key, value in adetailer_config.items():
@@ -225,6 +245,7 @@ class AdetailerGenerator:
                     setattr(self.adetailer_settings, key, value)
         
         logger.info(f"Processing {len(image_paths)} specific images with Adetailer")
+        logger.info(f"Output directory: {output_dir}")
         
         processed_images = []
         successful_count = 0
@@ -236,6 +257,7 @@ class AdetailerGenerator:
                 # Process single image with Adetailer
                 enhanced_path = self._process_single_existing_image(
                     image_path, 
+                    output_dir,
                     output_suffix
                 )
                 
@@ -254,6 +276,7 @@ class AdetailerGenerator:
                 logger.error(f"Error processing {image_path.name}: {e}")
         
         logger.info(f"Adetailer processing completed: {successful_count}/{len(image_paths)} images processed")
+        logger.info(f"Enhanced images saved to: {output_dir}")
         return processed_images
 
     def generate_with_adetailer(

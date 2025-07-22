@@ -74,13 +74,22 @@ fi
 
 print_status "Found $image_count images in output directory"
 
+# Create adetailer_processed directory
+adetailer_output_dir="data/output/adetailer_processed"
+print_status "Creating output directory: $adetailer_output_dir"
+mkdir -p "$adetailer_output_dir"
+
 # Run Adetailer processing
 print_status "Starting Adetailer processing of existing images..."
 python bin/process_existing_with_adetailer.py
 
 if [ $? -eq 0 ]; then
     print_success "Adetailer processing completed successfully!"
-    print_status "Check the data/output directory for enhanced images (with _adetailer suffix)"
+    print_status "Enhanced images saved to: $adetailer_output_dir"
+    
+    # Show processed images count
+    processed_count=$(find "$adetailer_output_dir" -name "*.jpg" -o -name "*.png" | wc -l)
+    print_status "Processed $processed_count images with Adetailer enhancement"
 else
     print_error "Adetailer processing failed!"
     exit 1
