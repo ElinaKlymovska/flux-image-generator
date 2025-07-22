@@ -102,6 +102,8 @@ python bin/generate_rotation.py --preset-info rotation_front
 ```
 
 **Adetailer Face Enhancement**:
+
+#### FLUX API (демо версія)
 ```bash
 # Single image with Adetailer
 python bin/generate_adetailer.py
@@ -109,7 +111,7 @@ python bin/generate_adetailer.py
 # Batch generation with Adetailer
 python bin/generate_adetailer_batch.py
 
-# Process existing images with Adetailer
+# Process existing images with Adetailer (demo)
 python bin/process_existing_with_adetailer.py
 
 # CLI commands for Adetailer
@@ -122,6 +124,21 @@ python -m src.flux_generator.cli.adetailer_commands process --confidence 0.4 --d
 ./scripts/run_adetailer.sh
 ./scripts/run_adetailer_batch.sh
 ./scripts/run_process_existing.sh
+```
+
+#### Stable Diffusion WebUI (повна підтримка Adetailer)
+```bash
+# Встановлення SD WebUI
+git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui
+cd stable-diffusion-webui
+git clone https://github.com/Bing-su/adetailer extensions/adetailer
+./webui.sh --api
+
+# Обробка зображень через SD WebUI
+./scripts/run_sd_webui.sh
+
+# Або напряму
+python bin/process_with_sd_webui.py
 ```
 
 ## 📁 Project Structure
