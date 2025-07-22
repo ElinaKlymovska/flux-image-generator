@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Optional, List, Dict, Any
 import base64
 import json
+import glob
 
 from ..config.settings import settings
 from ..config.prompts import PromptConfig
@@ -61,6 +62,200 @@ class AdetailerGenerator:
         
         logger.info(f"Initialized Adetailer generator with input image: {self.input_image}")
     
+    def process_existing_images(
+        self, 
+        input_dir: Optional[Path] = None,
+        file_pattern: str = "*.jpg",
+        adetailer_config: Optional[Dict[str, Any]] = None,
+        output_suffix: str = "_adetailer"
+    ) -> List[Path]:
+        """Process existing images in output directory with Adetailer enhancement."""
+        # Use output directory if not specified
+        if input_dir is None:
+            input_dir = self.settings.paths.output_dir
+        
+        # Update Adetailer settings if provided
+        if adetailer_config:
+            for key, value in adetailer_config.items():
+                if hasattr(self.adetailer_settings, key):
+                    setattr(self.adetailer_settings, key, value)
+        
+        # Find all images in the directory
+        image_pattern = str(input_dir / file_pattern)
+        image_files = glob.glob(image_pattern)
+        
+        # Also check for PNG files
+        png_pattern = str(input_dir / "*.png")
+        png_files = glob.glob(png_pattern)
+        image_files.extend(png_files)
+        
+        if not image_files:
+            logger.warning(f"No images found in {input_dir} with pattern {file_pattern}")
+            return []
+        
+        logger.info(f"Found {len(image_files)} images to process with Adetailer")
+        
+        processed_images = []
+        successful_count = 0
+        
+        for i, image_path in enumerate(image_files, 1):
+            image_path = Path(image_path)
+            logger.info(f"Processing image {i}/{len(image_files)}: {image_path.name}")
+            
+            try:
+                # Process single image with Adetailer
+                enhanced_path = self._process_single_existing_image(
+                    image_path, 
+                    output_suffix
+                )
+                
+                if enhanced_path:
+                    processed_images.append(enhanced_path)
+                    successful_count += 1
+                    logger.info(f"Successfully processed: {enhanced_path.name}")
+                else:
+                    logger.warning(f"Failed to process: {image_path.name}")
+                
+                # Small delay between requests
+                if i < len(image_files):
+                    time.sleep(2)
+                    
+            except Exception as e:
+                logger.error(f"Error processing {image_path.name}: {e}")
+        
+        logger.info(f"Adetailer processing completed: {successful_count}/{len(image_files)} images processed")
+        return processed_images
+    
+    def _process_single_existing_image(
+        self, 
+        image_path: Path, 
+        output_suffix: str
+    ) -> Optional[Path]:
+        """Process a single existing image with Adetailer enhancement."""
+        try:
+            # Create Adetailer request
+            adetailer_request = self._create_adetailer_request_from_file(
+                image_path
+            )
+            
+            # Send to API with Adetailer parameters
+            response = self.api_client.generate_image(adetailer_request)
+            
+            if response.success and response.image_data:
+                # Generate filename for enhanced image
+                stem = image_path.stem
+                suffix = image_path.suffix
+                enhanced_filename = f"{stem}{output_suffix}{suffix}"
+                
+                # Save enhanced image
+                output_path = self.settings.paths.output_dir / enhanced_filename
+                ImageUtils.save_image_data(response.image_data, output_path)
+                
+                return output_path
+            else:
+                logger.error(f"Adetailer enhancement failed for {image_path.name}: {response.error_message}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error processing {image_path.name}: {e}")
+            return None
+    
+    def _create_adetailer_request_from_file(
+        self, 
+        image_path: Path
+    ) -> GenerationRequest:
+        """Create generation request with Adetailer parameters from existing file."""
+        # Read image
+        with open(image_path, "rb") as f:
+            image_data = f.read()
+        
+        # Determine MIME type
+        mime_type = "image/jpeg"
+        if image_path.suffix.lower() in [".png"]:
+            mime_type = "image/png"
+        
+        # Encode to base64
+        encoded_image = base64.b64encode(image_data).decode("utf-8")
+        input_image = f"data:{mime_type};base64,{encoded_image}"
+        
+        # Create enhanced prompt with face details
+        enhanced_prompt = f"{self.adetailer_settings.prompt}, ultra realistic face, detailed facial features"
+        
+        # Create request with Adetailer parameters
+        request = GenerationRequest(
+            prompt=enhanced_prompt,
+            input_image=input_image,
+            seed=1000,  # Default seed for processing
+            aspect_ratio="1:1",  # Square for face processing
+            output_format=image_path.suffix[1:] if image_path.suffix else "jpeg"
+        )
+        
+        # Add Adetailer-specific parameters to the request
+        request_dict = request.to_dict()
+        request_dict.update({
+            "adetailer": {
+                "enabled": self.adetailer_settings.enabled,
+                "model": self.adetailer_settings.model,
+                "confidence": self.adetailer_settings.confidence,
+                "dilation": self.adetailer_settings.dilation,
+                "denoising_strength": self.adetailer_settings.denoising_strength,
+                "prompt": self.adetailer_settings.prompt,
+                "negative_prompt": self.adetailer_settings.negative_prompt,
+                "steps": self.adetailer_settings.steps,
+                "cfg_scale": self.adetailer_settings.cfg_scale,
+                "sampler": self.adetailer_settings.sampler,
+                "width": self.adetailer_settings.width,
+                "height": self.adetailer_settings.height
+            }
+        })
+        
+        return request
+    
+    def process_specific_images(
+        self, 
+        image_paths: List[Path],
+        adetailer_config: Optional[Dict[str, Any]] = None,
+        output_suffix: str = "_adetailer"
+    ) -> List[Path]:
+        """Process specific images with Adetailer enhancement."""
+        # Update Adetailer settings if provided
+        if adetailer_config:
+            for key, value in adetailer_config.items():
+                if hasattr(self.adetailer_settings, key):
+                    setattr(self.adetailer_settings, key, value)
+        
+        logger.info(f"Processing {len(image_paths)} specific images with Adetailer")
+        
+        processed_images = []
+        successful_count = 0
+        
+        for i, image_path in enumerate(image_paths, 1):
+            logger.info(f"Processing image {i}/{len(image_paths)}: {image_path.name}")
+            
+            try:
+                # Process single image with Adetailer
+                enhanced_path = self._process_single_existing_image(
+                    image_path, 
+                    output_suffix
+                )
+                
+                if enhanced_path:
+                    processed_images.append(enhanced_path)
+                    successful_count += 1
+                    logger.info(f"Successfully processed: {enhanced_path.name}")
+                else:
+                    logger.warning(f"Failed to process: {image_path.name}")
+                
+                # Small delay between requests
+                if i < len(image_paths):
+                    time.sleep(2)
+                    
+            except Exception as e:
+                logger.error(f"Error processing {image_path.name}: {e}")
+        
+        logger.info(f"Adetailer processing completed: {successful_count}/{len(image_paths)} images processed")
+        return processed_images
+
     def generate_with_adetailer(
         self, 
         prompt: Optional[str] = None,

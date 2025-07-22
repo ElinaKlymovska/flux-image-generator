@@ -104,6 +104,109 @@ def example_batch_generation():
         print(f"❌ Error: {e}")
 
 
+def example_process_existing_images():
+    """Example of processing existing images with Adetailer."""
+    print("\n=== Process Existing Images with Adetailer ===")
+    
+    try:
+        # Initialize generator
+        generator = AdetailerGenerator()
+        
+        # Test connection
+        if not generator.test_connection():
+            print("❌ Connection failed")
+            return
+        
+        print("✅ Connection successful")
+        
+        # Custom Adetailer settings for processing existing images
+        adetailer_config = {
+            'confidence': 0.4,  # Higher confidence for better detection
+            'denoising_strength': 0.5,  # Stronger denoising
+            'steps': 25,  # More steps for better quality
+            'cfg_scale': 8.0,  # Higher CFG for more detail
+            'prompt': 'beautiful face, detailed eyes, perfect skin, high quality, ultra realistic'
+        }
+        
+        # Process existing images
+        output_paths = generator.process_existing_images(
+            file_pattern="*.jpg",  # Process all JPG files
+            adetailer_config=adetailer_config,
+            output_suffix="_adetailer"
+        )
+        
+        if output_paths:
+            print(f"✅ Processed {len(output_paths)} images:")
+            for i, path in enumerate(output_paths, 1):
+                print(f"  {i}. {path}")
+        else:
+            print("❌ No images were processed")
+            
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+
+def example_process_specific_images():
+    """Example of processing specific images with Adetailer."""
+    print("\n=== Process Specific Images with Adetailer ===")
+    
+    try:
+        # Initialize generator
+        generator = AdetailerGenerator()
+        
+        # Test connection
+        if not generator.test_connection():
+            print("❌ Connection failed")
+            return
+        
+        print("✅ Connection successful")
+        
+        # Define specific images to process
+        output_dir = Path("data/output")
+        specific_images = [
+            output_dir / "woman_1000.jpg",
+            output_dir / "woman_1001.jpg",
+            output_dir / "woman_1002.jpg"
+        ]
+        
+        # Filter only existing images
+        existing_images = [img for img in specific_images if img.exists()]
+        
+        if not existing_images:
+            print("❌ No specified images found")
+            return
+        
+        print(f"📁 Processing {len(existing_images)} specific images:")
+        for img in existing_images:
+            print(f"  📸 {img.name}")
+        
+        # Custom Adetailer settings
+        adetailer_config = {
+            'confidence': 0.5,  # High confidence
+            'denoising_strength': 0.6,  # Strong denoising
+            'steps': 30,  # Many steps for high quality
+            'cfg_scale': 9.0,  # High CFG for maximum detail
+            'prompt': 'ultra detailed face, perfect skin texture, realistic eyes, high resolution'
+        }
+        
+        # Process specific images
+        output_paths = generator.process_specific_images(
+            image_paths=existing_images,
+            adetailer_config=adetailer_config,
+            output_suffix="_enhanced"
+        )
+        
+        if output_paths:
+            print(f"✅ Processed {len(output_paths)} images:")
+            for i, path in enumerate(output_paths, 1):
+                print(f"  {i}. {path}")
+        else:
+            print("❌ No images were processed")
+            
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+
 def example_custom_settings():
     """Example of customizing Adetailer settings."""
     print("\n=== Custom Adetailer Settings ===")
@@ -147,6 +250,8 @@ def main():
     # Run examples
     example_single_generation()
     example_batch_generation()
+    example_process_existing_images()
+    example_process_specific_images()
     example_custom_settings()
     
     print("\n✅ All examples completed!")

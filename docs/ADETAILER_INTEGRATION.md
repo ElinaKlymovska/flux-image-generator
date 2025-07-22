@@ -52,6 +52,33 @@ for path in output_paths:
     print(f"Згенеровано: {path}")
 ```
 
+### Обробка існуючих зображень
+
+```python
+# Обробка всіх зображень у папці output
+output_paths = generator.process_existing_images(
+    file_pattern="*.jpg",
+    adetailer_config={
+        'confidence': 0.4,
+        'denoising_strength': 0.5,
+        'steps': 25,
+        'cfg_scale': 8.0
+    },
+    output_suffix="_adetailer"
+)
+
+# Обробка конкретних зображень
+specific_images = [
+    Path("data/output/woman_1000.jpg"),
+    Path("data/output/woman_1001.jpg")
+]
+output_paths = generator.process_specific_images(
+    image_paths=specific_images,
+    adetailer_config={'confidence': 0.5, 'steps': 30},
+    output_suffix="_enhanced"
+)
+```
+
 ### Налаштування параметрів
 
 ```python
@@ -103,6 +130,25 @@ python -m src.flux_generator.cli.adetailer_commands batch \
     --denoising-strength 0.4
 ```
 
+### Обробка існуючих зображень
+
+```bash
+# Обробка всіх зображень у папці output
+python -m src.flux_generator.cli.adetailer_commands process \
+    --file-pattern "*.jpg" \
+    --confidence 0.4 \
+    --denoising-strength 0.5 \
+    --steps 25 \
+    --cfg-scale 8.0
+
+# Обробка конкретних файлів
+python -m src.flux_generator.cli.adetailer_commands process-files \
+    --files "data/output/woman_1000.jpg,data/output/woman_1001.jpg" \
+    --confidence 0.5 \
+    --steps 30 \
+    --output-suffix "_enhanced"
+```
+
 ### Тестування з'єднання
 
 ```bash
@@ -130,6 +176,9 @@ python -m src.flux_generator.cli.adetailer_commands configure \
 
 # Batch генерація
 ./scripts/run_adetailer_batch.sh
+
+# Обробка існуючих зображень
+./scripts/run_process_existing.sh
 ```
 
 ## Параметри Adetailer
@@ -216,10 +265,12 @@ src/flux_generator/
 │   └── adetailer_commands.py     # CLI команди
 bin/
 ├── generate_adetailer.py         # Скрипт генерації
-└── generate_adetailer_batch.py   # Скрипт batch генерації
+├── generate_adetailer_batch.py   # Скрипт batch генерації
+└── process_existing_with_adetailer.py # Скрипт обробки існуючих зображень
 scripts/
 ├── run_adetailer.sh              # Shell скрипт
-└── run_adetailer_batch.sh        # Shell скрипт batch
+├── run_adetailer_batch.sh        # Shell скрипт batch
+└── run_process_existing.sh       # Shell скрипт обробки існуючих зображень
 examples/
 └── generate_adetailer_example.py # Приклади використання
 tests/

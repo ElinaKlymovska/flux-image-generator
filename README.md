@@ -109,12 +109,19 @@ python bin/generate_adetailer.py
 # Batch generation with Adetailer
 python bin/generate_adetailer_batch.py
 
+# Process existing images with Adetailer
+python bin/process_existing_with_adetailer.py
+
 # CLI commands for Adetailer
 python -m src.flux_generator.cli.adetailer_commands generate --confidence 0.4 --denoising-strength 0.5
+
+# Process existing images via CLI
+python -m src.flux_generator.cli.adetailer_commands process --confidence 0.4 --denoising-strength 0.5
 
 # Or use the scripts:
 ./scripts/run_adetailer.sh
 ./scripts/run_adetailer_batch.sh
+./scripts/run_process_existing.sh
 ```
 
 ## 📁 Project Structure
@@ -136,6 +143,7 @@ SenteticData/
 │   ├── generate_rotation.py     # Character rotation generator
 │   ├── generate_adetailer.py    # Adetailer face enhancement
 │   ├── generate_adetailer_batch.py # Batch Adetailer generation
+│   ├── process_existing_with_adetailer.py # Process existing images with Adetailer
 │   └── prompt_tester_main.py
 ├── data/
 │   ├── input/                   # Input images
@@ -148,6 +156,7 @@ SenteticData/
 │   ├── run_rotation.sh          # Character rotation
 │   ├── run_adetailer.sh         # Adetailer generation
 │   ├── run_adetailer_batch.sh   # Batch Adetailer generation
+│   ├── run_process_existing.sh  # Process existing images with Adetailer
 │   └── run_prompt_tester.sh
 ├── examples/                    # Usage examples
 ├── tests/                       # Test files
@@ -243,6 +252,29 @@ generator.update_adetailer_settings(
     denoising_strength=0.6,
     steps=30,
     cfg_scale=9.0
+)
+
+# Process existing images with Adetailer
+output_paths = generator.process_existing_images(
+    file_pattern="*.jpg",
+    adetailer_config={
+        'confidence': 0.4,
+        'denoising_strength': 0.5,
+        'steps': 25,
+        'cfg_scale': 8.0
+    },
+    output_suffix="_adetailer"
+)
+
+# Process specific images
+specific_images = [
+    Path("data/output/woman_1000.jpg"),
+    Path("data/output/woman_1001.jpg")
+]
+output_paths = generator.process_specific_images(
+    image_paths=specific_images,
+    adetailer_config={'confidence': 0.5, 'steps': 30},
+    output_suffix="_enhanced"
 )
 ```
 
