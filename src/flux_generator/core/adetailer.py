@@ -191,22 +191,32 @@ class AdetailerGenerator:
         image_path: Path
     ) -> GenerationRequest:
         """Create Adetailer request from existing image file."""
-        # Read and encode image
-        with open(image_path, 'rb') as f:
-            image_data = f.read()
-        
-        input_image = base64.b64encode(image_data).decode('utf-8')
-        
         # Create enhanced prompt with face details
         enhanced_prompt = f"{self.adetailer_settings.prompt}, ultra realistic face, detailed facial features"
         
-        # Create request with Adetailer parameters
-        request = GenerationRequest(
+        # Create request with Adetailer parameters using proper method
+        # Preserve original format and aspect ratio
+        original_format = "jpeg" if image_path.suffix.lower() in ['.jpg', '.jpeg'] else "png"
+        
+        # Get original aspect ratio
+        try:
+            from PIL import Image
+            with Image.open(image_path) as img:
+                width, height = img.size
+                # Calculate aspect ratio as string (e.g., "2:3", "1:1", "16:9")
+                gcd = lambda a, b: a if b == 0 else gcd(b, a % b)
+                divisor = gcd(width, height)
+                aspect_ratio = f"{width//divisor}:{height//divisor}"
+        except:
+            # Fallback to original aspect ratio if PIL fails
+            aspect_ratio = "2:3"
+        
+        request = GenerationRequest.from_image_file(
             prompt=enhanced_prompt,
-            input_image=input_image,
+            image_path=image_path,
             seed=1000,  # Default seed for processing
-            aspect_ratio="1:1",  # Square for face processing
-            output_format=image_path.suffix[1:] if image_path.suffix else "jpeg"
+            aspect_ratio=aspect_ratio,  # Preserve original aspect ratio
+            output_format=original_format
         )
         
         # Add Adetailer-specific parameters to the request
@@ -235,22 +245,32 @@ class AdetailerGenerator:
         image_path: Path
     ) -> GenerationRequest:
         """Create standard request from existing image file (without Adetailer parameters)."""
-        # Read and encode image
-        with open(image_path, 'rb') as f:
-            image_data = f.read()
-        
-        input_image = base64.b64encode(image_data).decode('utf-8')
-        
         # Create enhanced prompt for face improvement
         enhanced_prompt = "ultra realistic face, detailed facial features, perfect skin, high quality, beautiful eyes"
         
-        # Create standard request without Adetailer parameters
-        request = GenerationRequest(
+        # Create standard request using the proper method
+        # Preserve original format and aspect ratio
+        original_format = "jpeg" if image_path.suffix.lower() in ['.jpg', '.jpeg'] else "png"
+        
+        # Get original aspect ratio
+        try:
+            from PIL import Image
+            with Image.open(image_path) as img:
+                width, height = img.size
+                # Calculate aspect ratio as string (e.g., "2:3", "1:1", "16:9")
+                gcd = lambda a, b: a if b == 0 else gcd(b, a % b)
+                divisor = gcd(width, height)
+                aspect_ratio = f"{width//divisor}:{height//divisor}"
+        except:
+            # Fallback to original aspect ratio if PIL fails
+            aspect_ratio = "2:3"
+        
+        request = GenerationRequest.from_image_file(
             prompt=enhanced_prompt,
-            input_image=input_image,
+            image_path=image_path,
             seed=1000,  # Default seed for processing
-            aspect_ratio="1:1",  # Square for face processing
-            output_format=image_path.suffix[1:] if image_path.suffix else "jpeg"
+            aspect_ratio=aspect_ratio,  # Preserve original aspect ratio
+            output_format=original_format
         )
         
         return request

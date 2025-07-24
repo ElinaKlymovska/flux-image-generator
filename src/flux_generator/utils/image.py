@@ -87,12 +87,26 @@ class ImageUtils:
         
         stat = image_path.stat()
         
+        # Try to get image dimensions if PIL is available
+        try:
+            from PIL import Image
+            with Image.open(image_path) as img:
+                width, height = img.size
+        except ImportError:
+            # PIL not available, use default values
+            width, height = 512, 512
+        except Exception:
+            # Any other error, use default values
+            width, height = 512, 512
+        
         return {
             "path": str(image_path),
             "size_bytes": stat.st_size,
             "size_mb": round(stat.st_size / (1024 * 1024), 2),
             "extension": image_path.suffix.lower(),
-            "hash": ImageUtils.get_image_hash(image_path)
+            "hash": ImageUtils.get_image_hash(image_path),
+            "width": width,
+            "height": height
         }
     
     @staticmethod

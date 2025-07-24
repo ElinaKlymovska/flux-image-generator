@@ -221,11 +221,19 @@ class FluxAPIClient:
                         
                 else:
                     error_msg = f"API returned status {response.status_code}"
+                    print(f"🔍 Response Status: {response.status_code}")
+                    print(f"🔍 Response Headers: {dict(response.headers)}")
+                    print(f"🔍 Response Text: {response.text[:500]}...")
+                    
                     try:
                         error_data = response.json()
                         error_msg = error_data.get("error", error_msg)
-                    except:
-                        pass
+                        # Log detailed error information
+                        logger.error(f"API Error Details: {json.dumps(error_data, indent=2)}")
+                        print(f"🔍 API Error Details: {json.dumps(error_data, indent=2)}")
+                    except Exception as e:
+                        print(f"🔍 Could not parse JSON response: {e}")
+                        print(f"🔍 Raw response: {response.text}")
                     
                     if response.status_code == 403:
                         raise APIError(403, "Access denied. Check API key.")
