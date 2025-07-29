@@ -7,7 +7,6 @@ A Python package for generating realistic images using BFL.ai FLUX API.
 # Core functionality
 from .core.generator import FluxImageGenerator
 from .core.enhanced import EnhancedFluxGenerator
-from .core.tester import PromptTester
 
 # API components
 from .api.client import FluxAPIClient
@@ -21,8 +20,7 @@ from .config.prompts import PromptConfig
 from .utils.image import ImageUtils
 from .utils.logger import setup_logger, get_logger
 
-# CLI
-from .cli.commands import main as cli_main
+# CLI - removed as not needed for unified command
 
 __version__ = "2.0.0"
 __author__ = "Elina Klymovska"
@@ -32,7 +30,6 @@ __all__ = [
     # Core classes
     "FluxImageGenerator",
     "EnhancedFluxGenerator", 
-    "PromptTester",
     
     # API components
     "FluxAPIClient",
@@ -50,6 +47,5 @@ __all__ = [
     "setup_logger",
     "get_logger",
     
-    # CLI
-    "cli_main"
+    # CLI - removed as not needed for unified command
 ] 
