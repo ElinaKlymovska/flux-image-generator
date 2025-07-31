@@ -5,6 +5,13 @@ api:
   timeout: 300
   max_retries: 3
   retry_delay: 5
+  # Оптимізовані налаштування таймауту
+  polling_interval: 5         # 5 секунд між звичайними перевірками
+  polling_timeout_attempts: 360  # 360 * 5s = 30 хвилин загалом
+  # Налаштування модерації контенту
+  moderation_timeout: 300     # 5 хвилин максимум для модерації
+  moderation_interval: 3      # 3 секунди між перевірками модерації
+  moderation_max_attempts: 100 # максимум спроб для модерації
 
 generation:
   default_count: 15

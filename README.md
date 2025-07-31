@@ -8,7 +8,7 @@
 
 1. Клонуйте репозиторій:
 ```bash
-git clone <repository-url>
+git clone https://github.com/ElinaKlymovska/flux-image-generator
 cd SenteticData
 ```
 
@@ -20,8 +20,6 @@ pip install -r requirements.txt
 3. Налаштуйте API ключ:
 ```bash
 export BFL_API_KEY="your_api_key_here"
-# або
-export FLUX_API_KEY="your_api_key_here"
 ```
 
 4. Додайте вхідне зображення:

@@ -6,75 +6,33 @@ import requests
 import time
 import json
 from typing import Optional
-from pathlib import Path
 
 from ..config.settings import settings
-from .models import GenerationRequest, GenerationResponse, APIError
+from .base import BaseAPIClient, APIError
+from .models import GenerationRequest, GenerationResponse
 
 
-class FluxAPIClient:
+class FluxAPIClient(BaseAPIClient):
     """Client for BFL.ai FLUX API."""
     
     def __init__(self, api_key: Optional[str] = None):
         """Initialize API client."""
-        self.api_key = api_key or settings.api_key
-        if not self.api_key:
-            raise ValueError("API key is required")
-        
-        self.base_url = settings.api.base_url
-        self.timeout = settings.api.timeout
-        self.max_retries = settings.api.max_retries
-        self.retry_delay = settings.api.retry_delay
-        
-        # Remove quotes if present
-        self.api_key = self.api_key.strip('"\'')
-        
-        self.headers = {
-            "x-key": self.api_key,
-            "Content-Type": "application/json"
-        }
-    
-    def test_connection(self) -> bool:
-        """Test API connection."""
-        try:
-            # Simple test request - just check if we can reach the API
-            # We'll use a minimal test that should work
-            test_data = {
-                "prompt": "test",
-                "input_image": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
-                "seed": 1000,
-                "aspect_ratio": "1:1"
-            }
-            
-            response = requests.post(
-                f"{self.base_url}/flux-kontext-pro",
-                headers=self.headers,
-                json=test_data,
-                timeout=10
-            )
-            
-            # If we get any response (even error), the API key is working
-            if response.status_code in [200, 400, 422]:  # Success or validation errors
-                return True
-            elif response.status_code == 403:
-                raise APIError(403, "Access denied. Check API key.")
-            else:
-                # Any other response means the API is reachable
-                return True
-                
-        except requests.exceptions.RequestException as e:
-            # Network error - API might be down
-            return False
-        except Exception as e:
-            # Any other exception - assume connection failed
-            return False
+        super().__init__(settings=settings, api_key=api_key, base_url=settings.api.base_url)
     
     def poll_generation_status(self, polling_url: str) -> Optional[dict]:
         """Poll generation status until completion."""
-        max_attempts = 180  # Maximum 15 minutes (180 * 5 seconds)
+        max_attempts = self.settings.api.polling_timeout_attempts
+        polling_interval = self.settings.api.polling_interval
         attempt = 0
         consecutive_errors = 0
         max_consecutive_errors = 5
+        
+        # Special handling for moderation
+        moderation_start_time = None
+        max_moderation_time = getattr(self.settings.api, 'moderation_timeout', 300)
+        moderation_attempts = 0
+        max_moderation_attempts = getattr(self.settings.api, 'moderation_max_attempts', 100)
+        moderation_interval = getattr(self.settings.api, 'moderation_interval', 3)
         
         while attempt < max_attempts:
             try:
@@ -97,20 +55,42 @@ class FluxAPIClient:
                     elif status == 'processing' or status == 'Pending':
                         consecutive_errors = 0  # Reset error counter on success
                         print(f"🔄 Processing... (attempt {attempt + 1}/{max_attempts})")
-                        time.sleep(5)
+                        time.sleep(polling_interval)
+                    elif status == 'Content Moderated':
+                        # Special handling for content moderation
+                        if moderation_start_time is None:
+                            moderation_start_time = time.time()
+                            print(f"🛡️ Content moderation in progress...")
+                        
+                        moderation_attempts += 1
+                        consecutive_errors = 0
+                        
+                        # Check if moderation is taking too long
+                        moderation_duration = time.time() - moderation_start_time
+                        if moderation_duration > max_moderation_time:
+                            raise APIError(0, f"Content moderation timeout after {moderation_duration:.1f} seconds")
+                        
+                        if moderation_attempts > max_moderation_attempts:
+                            raise APIError(0, f"Content moderation exceeded maximum attempts ({max_moderation_attempts})")
+                        
+                        # Use optimized interval for moderation status
+                        if moderation_attempts % 10 == 0:  # Show progress every 10 attempts
+                            print(f"🛡️ Still moderating... ({moderation_attempts} checks, {moderation_duration:.1f}s)")
+                        
+                        time.sleep(moderation_interval)
                     else:
                         consecutive_errors = 0  # Reset error counter on success
                         print(f"ℹ️ Status: {status}")
-                        time.sleep(5)
+                        time.sleep(polling_interval)
                 else:
                     consecutive_errors += 1
                     print(f"❌ HTTP {response.status_code} error while polling status")
                     
                     if consecutive_errors >= max_consecutive_errors:
                         print(f"⚠️ Too many consecutive errors ({consecutive_errors}), increasing delay...")
-                        time.sleep(30)  # Longer delay after many errors
+                        time.sleep(polling_interval * 6)  # Longer delay after many errors
                     else:
-                        time.sleep(5)
+                        time.sleep(polling_interval)
                     
             except requests.exceptions.Timeout:
                 consecutive_errors += 1
@@ -118,9 +98,9 @@ class FluxAPIClient:
                 
                 if consecutive_errors >= max_consecutive_errors:
                     print(f"⚠️ Too many consecutive timeouts, increasing delay...")
-                    time.sleep(30)
+                    time.sleep(polling_interval * 6)
                 else:
-                    time.sleep(5)
+                    time.sleep(polling_interval)
                     
             except requests.exceptions.ConnectionError as e:
                 consecutive_errors += 1
@@ -128,9 +108,9 @@ class FluxAPIClient:
                 
                 if consecutive_errors >= max_consecutive_errors:
                     print(f"⚠️ Too many consecutive connection errors, waiting longer...")
-                    time.sleep(60)  # Much longer delay for connection issues
+                    time.sleep(polling_interval * 12)  # Much longer delay for connection issues
                 else:
-                    time.sleep(10)
+                    time.sleep(polling_interval * 2)
                     
             except requests.exceptions.RequestException as e:
                 consecutive_errors += 1
@@ -138,9 +118,9 @@ class FluxAPIClient:
                 
                 if consecutive_errors >= max_consecutive_errors:
                     print(f"⚠️ Too many consecutive network errors, waiting longer...")
-                    time.sleep(30)
+                    time.sleep(polling_interval * 6)
                 else:
-                    time.sleep(10)
+                    time.sleep(polling_interval * 2)
             
             attempt += 1
             
@@ -168,120 +148,72 @@ class FluxAPIClient:
     
     def generate_image(self, request: GenerationRequest) -> GenerationResponse:
         """Generate image using FLUX API."""
-        for attempt in range(self.max_retries):
-            try:
-                # Use session for better connection handling
-                session = requests.Session()
-                session.headers.update(self.headers)
-                
-                # Submit generation request
-                print(f"🚀 Submitting generation request (attempt {attempt + 1}/{self.max_retries})...")
-                response = session.post(
-                    f"{self.base_url}/flux-kontext-pro",
-                    headers=self.headers,
-                    json=request.to_dict(),
-                    timeout=self.timeout
-                )
-                
-                if response.status_code == 200:
-                    # Parse response to get polling URL
-                    try:
-                        result = response.json()
-                        polling_url = result.get('polling_url')
-                        
-                        if not polling_url:
-                            return GenerationResponse.error_response("No polling URL in response")
-                        
-                        # Poll for completion
-                        print("🔄 Waiting for generation to complete...")
-                        final_result = self.poll_generation_status(polling_url)
-                        
-                        # Extract image URL from result
-                        result_data = final_result.get('result', {})
-                        image_url = result_data.get('sample')
-                        
-                        if not image_url:
-                            return GenerationResponse.error_response("No image URL in result")
-                        
-                        # Download image
-                        print("📥 Downloading generated image...")
-                        image_data = self.download_image(image_url)
-                        
-                        if image_data:
-                            print("✅ Image generated successfully!")
-                            return GenerationResponse.success_response(
-                                image_data=image_data,
-                                request_id=final_result.get('id')
-                            )
-                        else:
-                            return GenerationResponse.error_response("Failed to download image")
-                            
-                    except json.JSONDecodeError:
-                        return GenerationResponse.error_response("Invalid JSON response")
-                        
-                else:
-                    error_msg = f"API returned status {response.status_code}"
-                    print(f"🔍 Response Status: {response.status_code}")
-                    print(f"🔍 Response Headers: {dict(response.headers)}")
-                    print(f"🔍 Response Text: {response.text[:500]}...")
-                    
-                    try:
-                        error_data = response.json()
-                        error_msg = error_data.get("error", error_msg)
-                        # Log detailed error information
-                        logger.error(f"API Error Details: {json.dumps(error_data, indent=2)}")
-                        print(f"🔍 API Error Details: {json.dumps(error_data, indent=2)}")
-                    except Exception as e:
-                        print(f"🔍 Could not parse JSON response: {e}")
-                        print(f"🔍 Raw response: {response.text}")
-                    
-                    if response.status_code == 403:
-                        raise APIError(403, "Access denied. Check API key.")
-                    elif response.status_code >= 500:
-                        # Server error, retry
-                        if attempt < self.max_retries - 1:
-                            print(f"⚠️ Server error, retrying in {self.retry_delay} seconds...")
-                            time.sleep(self.retry_delay)
-                            continue
-                    
-                    return GenerationResponse.error_response(error_msg)
-                    
-            except requests.exceptions.Timeout:
-                if attempt < self.max_retries - 1:
-                    print(f"⚠️ Request timeout, retrying in {self.retry_delay} seconds...")
-                    time.sleep(self.retry_delay)
-                    continue
-                return GenerationResponse.error_response("Request timeout")
-                
-            except requests.exceptions.ConnectionError as e:
-                if attempt < self.max_retries - 1:
-                    print(f"⚠️ Connection error: {e}, retrying in {self.retry_delay * 2} seconds...")
-                    time.sleep(self.retry_delay * 2)  # Longer delay for connection issues
-                    continue
-                return GenerationResponse.error_response(f"Connection failed: {e}")
-                
-            except requests.exceptions.RequestException as e:
-                if attempt < self.max_retries - 1:
-                    print(f"⚠️ Request failed: {e}, retrying in {self.retry_delay} seconds...")
-                    time.sleep(self.retry_delay)
-                    continue
-                return GenerationResponse.error_response(f"Request failed: {e}")
-        
-        return GenerationResponse.error_response(f"All {self.max_retries} attempts failed")
-        
-        return GenerationResponse.error_response("Max retries exceeded")
-    
-    def generate_image_from_file(
-        self, 
-        prompt: str, 
-        image_path: Path, 
-        **kwargs
-    ) -> GenerationResponse:
-        """Generate image from file."""
         try:
-            request = GenerationRequest.from_image_file(prompt, image_path, **kwargs)
-            return self.generate_image(request)
-        except FileNotFoundError as e:
-            return GenerationResponse.error_response(str(e))
+            # Submit generation request
+            print(f"🚀 Submitting generation request...")
+            response = self._make_request(
+                "POST",
+                "/flux-kontext-pro",
+                data=request.to_dict()
+            )
+            
+            if response.status_code == 200:
+                # Parse response to get polling URL
+                try:
+                    result = response.json()
+                    polling_url = result.get('polling_url')
+                    
+                    if not polling_url:
+                        return GenerationResponse.error_response("No polling URL in response")
+                    
+                    # Poll for completion
+                    print("🔄 Waiting for generation to complete...")
+                    final_result = self.poll_generation_status(polling_url)
+                    
+                    # Extract image URL from result
+                    result_data = final_result.get('result', {})
+                    image_url = result_data.get('sample')
+                    
+                    if not image_url:
+                        return GenerationResponse.error_response("No image URL in result")
+                    
+                    # Download image
+                    print("📥 Downloading generated image...")
+                    image_data = self.download_image(image_url)
+                    
+                    if image_data:
+                        print("✅ Image generated successfully!")
+                        return GenerationResponse.success_response(
+                            image_data=image_data,
+                            request_id=final_result.get('id')
+                        )
+                    else:
+                        return GenerationResponse.error_response("Failed to download image")
+                        
+                except json.JSONDecodeError:
+                    return GenerationResponse.error_response("Invalid JSON response")
+                    
+            else:
+                error_msg = f"API returned status {response.status_code}"
+                print(f"🔍 Response Status: {response.status_code}")
+                print(f"🔍 Response Headers: {dict(response.headers)}")
+                print(f"🔍 Response Text: {response.text[:500]}...")
+                
+                try:
+                    error_data = response.json()
+                    error_msg = error_data.get("error", error_msg)
+                    # Log detailed error information
+                    print(f"🔍 API Error Details: {json.dumps(error_data, indent=2)}")
+                except Exception as e:
+                    print(f"🔍 Could not parse JSON response: {e}")
+                    print(f"🔍 Raw response: {response.text}")
+                
+                if response.status_code == 403:
+                    raise APIError(403, "Access denied. Check API key.")
+                
+                return GenerationResponse.error_response(error_msg)
+                
+        except APIError:
+            raise
         except Exception as e:
-            return GenerationResponse.error_response(f"Failed to create request: {e}") 
+            return GenerationResponse.error_response(f"Request failed: {e}")

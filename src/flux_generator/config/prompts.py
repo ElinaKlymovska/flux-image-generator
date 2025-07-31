@@ -1,12 +1,10 @@
 """
 Промпти та налаштування для FLUX API Image Generator
-Вдосконалена система з прецизійними технічними параметрами та контекстуальними анотаціями
 """
 
 from typing import Dict, Any, List, Optional
 
 class PromptConfig:
-    """Конфігурація промптів для різних стилів з прецизійними параметрами"""
     
     # Базові промпти для різних стилів з уніфікованими технічними параметрами
     PROMPTS = {
@@ -21,6 +19,19 @@ class PromptConfig:
                 "background": "neutral seamless",
                 "focus": "hyper-detailed facial features",
                 "quality": "RAW image quality"
+            }
+        },
+        "safe_realistic": {
+            "name": "Safe Realistic",
+            "prompt": "Professional portrait of a woman, natural lighting, clean background, clear facial details, studio photography, high resolution, professional quality, business headshot composition",
+            "description": "Безпечний реалістичний портрет без проблемних фраз",
+            "use_case": "Business profiles, professional headshots, corporate photography, safe content generation",
+            "technical_specs": {
+                "resolution": "high",
+                "lighting": "natural",
+                "background": "clean",
+                "focus": "clear details",
+                "quality": "professional"
             }
         },
         "cinematic": {
@@ -184,6 +195,11 @@ class PromptConfig:
             "safety_tolerance": 2,
             "description": "Standard quality for general use"
         },
+        "safe": {
+            "prompt_upsampling": False,
+            "safety_tolerance": 6,
+            "description": "Safe quality to avoid content moderation"
+        },
         "high": {
             "prompt_upsampling": True,
             "safety_tolerance": 1,
@@ -203,7 +219,6 @@ class PromptConfig:
     
     @classmethod
     def get_prompt_config(cls, style: str = "ultra_realistic", aspect_ratio: str = "portrait", quality: str = "high") -> Dict[str, Any]:
-        """Отримання конфігурації для генерації з прецизійними параметрами"""
         if style not in cls.PROMPTS:
             raise ValueError(f"Невідомий стиль: {style}. Доступні стилі: {list(cls.PROMPTS.keys())}")
         
@@ -295,7 +310,6 @@ class PromptConfig:
     
     @classmethod
     def get_preset_config(cls, preset: str, aspect_ratio: str = "portrait", quality: str = "high") -> Dict[str, Any]:
-        """Отримання конфігурації пресету для генерації"""
         # Пресети для різних типів генерації
         PRESETS = {
             "rotation_front": {

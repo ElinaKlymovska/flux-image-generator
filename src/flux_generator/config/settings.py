@@ -2,24 +2,22 @@
 Settings and configuration management for FLUX Image Generator.
 """
 
-import os
 from pathlib import Path
 from typing import Optional
 from dataclasses import dataclass, field
-import yaml
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+from .base import BaseConfig, EnvironmentConfig, PathConfig
 
 
 @dataclass
 class APISettings:
     """API configuration settings."""
     base_url: str = "https://api.bfl.ai/v1"
-    timeout: int = 600  # Increased timeout to 10 minutes
-    max_retries: int = 5  # Increased retries
-    retry_delay: int = 10  # Increased delay between retries
+    timeout: int = field(default_factory=EnvironmentConfig.get_timeout)
+    max_retries: int = field(default_factory=EnvironmentConfig.get_max_retries)
+    retry_delay: int = 10
+    polling_interval: int = 5  # seconds
+    polling_timeout_attempts: int = 180  # 180 * 5s = 15 minutes
 
 
 @dataclass
@@ -33,95 +31,53 @@ class GenerationSettings:
     default_style: str = "realistic"
 
 
-@dataclass
-class PathSettings:
-    """Path configuration settings."""
-    base_dir: Path = field(default_factory=lambda: Path.cwd())
-    input_dir: Path = field(init=False)
-    output_dir: Path = field(init=False)
-    config_dir: Path = field(init=False)
-    
-    def __post_init__(self):
-        self.input_dir = self.base_dir / "data" / "input"
-        self.output_dir = self.base_dir / "data" / "output"
-        self.config_dir = self.base_dir / "config"
-
-
-@dataclass
-class Settings:
+class Settings(BaseConfig):
     """Main settings class."""
-    api_key: Optional[str] = None
-    api: APISettings = field(default_factory=APISettings)
-    generation: GenerationSettings = field(default_factory=GenerationSettings)
-    paths: PathSettings = field(default_factory=PathSettings)
     
-    def __post_init__(self):
-        # Load API key from environment
-        if not self.api_key:
-            self.api_key = os.getenv("FLUX_API_KEY") or os.getenv("BFL_API_KEY")
-        
-        # Create directories if they don't exist
-        self.paths.input_dir.mkdir(parents=True, exist_ok=True)
-        self.paths.output_dir.mkdir(parents=True, exist_ok=True)
-        self.paths.config_dir.mkdir(parents=True, exist_ok=True)
-    
-    @classmethod
-    def from_file(cls, config_path: Optional[Path] = None) -> "Settings":
-        """Load settings from YAML file."""
+    def __init__(self, config_path: Optional[Path] = None):
+        """Initialize settings."""
         if config_path is None:
-            config_path = Path.cwd() / "config" / "config.yaml"
+            path_config = PathConfig()
+            config_path = path_config.config_dir / "config.yaml"
         
-        settings = cls()
+        super().__init__(config_path)
         
-        if config_path.exists():
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config_data = yaml.safe_load(f)
-                
-            if config_data:
-                # Update API settings
-                if 'api' in config_data:
-                    api_data = config_data['api']
-                    settings.api.base_url = api_data.get('base_url', settings.api.base_url)
-                    settings.api.timeout = api_data.get('timeout', settings.api.timeout)
-                    settings.api.max_retries = api_data.get('max_retries', settings.api.max_retries)
-                    settings.api.retry_delay = api_data.get('retry_delay', settings.api.retry_delay)
-                
-                # Update generation settings
-                if 'generation' in config_data:
-                    gen_data = config_data['generation']
-                    settings.generation.default_count = gen_data.get('default_count', settings.generation.default_count)
-                    settings.generation.default_seed = gen_data.get('default_seed', settings.generation.default_seed)
-                    settings.generation.default_aspect_ratio = gen_data.get('default_aspect_ratio', settings.generation.default_aspect_ratio)
-                    settings.generation.default_output_format = gen_data.get('default_output_format', settings.generation.default_output_format)
-                    settings.generation.default_quality = gen_data.get('default_quality', settings.generation.default_quality)
-                    settings.generation.default_style = gen_data.get('default_style', settings.generation.default_style)
+        # Initialize components
+        self.paths = PathConfig()
+        self.api = APISettings()
+        self.generation = GenerationSettings()
+        self.api_key = EnvironmentConfig.get_api_key()
         
-        return settings
+        # Load from config file
+        self._load_from_config()
+        
+        # Validate
+        self.validate()
     
-    def save_to_file(self, config_path: Optional[Path] = None) -> None:
-        """Save settings to YAML file."""
-        if config_path is None:
-            config_path = self.paths.config_dir / "config.yaml"
+    def _load_from_config(self) -> None:
+        """Load settings from configuration data."""
+        if not self._config_data:
+            return
         
-        config_data = {
-            'api': {
-                'base_url': self.api.base_url,
-                'timeout': self.api.timeout,
-                'max_retries': self.api.max_retries,
-                'retry_delay': self.api.retry_delay,
-            },
-            'generation': {
-                'default_count': self.generation.default_count,
-                'default_seed': self.generation.default_seed,
-                'default_aspect_ratio': self.generation.default_aspect_ratio,
-                'default_output_format': self.generation.default_output_format,
-                'default_quality': self.generation.default_quality,
-                'default_style': self.generation.default_style,
-            }
-        }
+        # Update API settings
+        if 'api' in self._config_data:
+            api_data = self._config_data['api']
+            self.api.base_url = api_data.get('base_url', self.api.base_url)
+            self.api.timeout = api_data.get('timeout', self.api.timeout)
+            self.api.max_retries = api_data.get('max_retries', self.api.max_retries)
+            self.api.retry_delay = api_data.get('retry_delay', self.api.retry_delay)
+            self.api.polling_interval = api_data.get('polling_interval', self.api.polling_interval)
+            self.api.polling_timeout_attempts = api_data.get('polling_timeout_attempts', self.api.polling_timeout_attempts)
         
-        with open(config_path, 'w', encoding='utf-8') as f:
-            yaml.dump(config_data, f, default_flow_style=False, indent=2)
+        # Update generation settings
+        if 'generation' in self._config_data:
+            gen_data = self._config_data['generation']
+            self.generation.default_count = gen_data.get('default_count', self.generation.default_count)
+            self.generation.default_seed = gen_data.get('default_seed', self.generation.default_seed)
+            self.generation.default_aspect_ratio = gen_data.get('default_aspect_ratio', self.generation.default_aspect_ratio)
+            self.generation.default_output_format = gen_data.get('default_output_format', self.generation.default_output_format)
+            self.generation.default_quality = gen_data.get('default_quality', self.generation.default_quality)
+            self.generation.default_style = gen_data.get('default_style', self.generation.default_style)
     
     def validate(self) -> bool:
         """Validate settings."""
@@ -132,7 +88,33 @@ class Settings:
             raise ValueError(f"Input directory does not exist: {self.paths.input_dir}")
         
         return True
+    
+    def get_default_config(self) -> dict:
+        """Get default configuration."""
+        return {
+            'api': {
+                'base_url': self.api.base_url,
+                'timeout': self.api.timeout,
+                'max_retries': self.api.max_retries,
+                'retry_delay': self.api.retry_delay,
+                'polling_interval': self.api.polling_interval,
+                'polling_timeout_attempts': self.api.polling_timeout_attempts,
+            },
+            'generation': {
+                'default_count': self.generation.default_count,
+                'default_seed': self.generation.default_seed,
+                'default_aspect_ratio': self.generation.default_aspect_ratio,
+                'default_output_format': self.generation.default_output_format,
+                'default_quality': self.generation.default_quality,
+                'default_style': self.generation.default_style,
+            }
+        }
+    
+    def save_to_file(self, config_path: Optional[Path] = None) -> None:
+        """Save settings to YAML file."""
+        self._config_data = self.get_default_config()
+        super().save_config(config_path)
 
 
 # Global settings instance
-settings = Settings.from_file() 
+settings = Settings() 
